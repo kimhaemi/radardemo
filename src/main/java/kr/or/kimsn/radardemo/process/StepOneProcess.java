@@ -87,49 +87,37 @@ public class StepOneProcess extends Thread {
                     boolean file_exists = sftp.fileExists(file_path, site_cd, dataKindStr);
                     System.out.println("[파일존재유무] : " + file_exists);
                     
-            //         //파일 O (ORDI - file_ok)
-            //         if(file_exists){
-            //             Long file_size_min = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_min"));
-            //             Long file_size_max = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_max"));
+                    //파일 O (ORDI - file_ok)
+                    if(file_exists){
+                        Long file_size_min = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_min"));
+                        Long file_size_max = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_max"));
 
-            //             boolean fileSize = sftp.fileSize(file_path, file_size_min, file_size_max);
+                        boolean fileSize = sftp.fileSize(file_path, file_size_min, file_size_max);
                         
-            //             //파일 품질 정상 (ORDI - filesize_ok)
-            //             if(fileSize){
-            //                 System.out.println("[파일 품질 정상 (ORDI - filesize_ok) query insert table1 - receive_condition]");
-            //                 System.out.println("[파일 품질 정상 (ORDI - filesize_ok) query insert table2 - receive_data]");
-            //             } else {
-            //             //파일 품질 이상 (WARN - filesize_no)
-            //                 System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]");
-            //                 System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]");
-            //             }
+                        //파일 품질 정상 (ORDI - filesize_ok)
+                        if(fileSize){
+                            System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]");
+                            System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table2 - receive_data]");
+                        } else {
+                        //파일 품질 이상 (WARN - filesize_no)
+                            System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]");
+                            System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]");
+                        }
                     
-            //         } else {
-            //         //파일 X (WARN - file_no)
-            //         }
+                    } else {
+                    //파일 X (WARN - file_no)
+                        System.out.println("[자료 미수신 (WARN - filesize_no) query insert table1 - receive_condition]");
+                        System.out.println("[자료 미수신 (WARN - filesize_no) query insert table2 - receive_data]");
+                    }
                 } else {
                 //접속 X (TOTA)
                     System.out.println("[접속 실패 query insert table1 - receive_condition]");
                     System.out.println("[접속 실패 query insert table2 - receive_data]");
-                    
                 }
-                
-
-
-                
-                
-
-
-                // System.out.println(srDto.get(a).getSiteCd() + "_SiteCd()");
             } catch (Exception e) {
                 // log.debug("error : " + e);
                 System.out.println("StepOneProcess run Error - " + e);
             }
-
         }
-        
     }
-
-    
-    
 }
