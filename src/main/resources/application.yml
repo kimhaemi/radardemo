@@ -1,0 +1,48 @@
+spring:
+# 콘솔 색상
+  output:
+    ansi:
+      enabled: always
+
+# DB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://175.197.48.213:3306/
+    # url: jdbc:mysql://175.197.48.213:23307/watchdog
+    # url: jdbc:mysql://localhost:3306/watchdog
+    username: root
+    #local
+    # password: test123
+    password: Test123~!@
+    # password: Watch1234!
+  
+  batch:
+    jdbc:
+      isolation-level-for-create: default
+      initialize-schema: always # 운영조건에서는 never 개발환경에서는 embedded, always로 하는 것이 좋습니다.
+    
+# query
+  jpa:
+    open-in-view: false #spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    show-sql: true # true 설정시 JPA 쿼리문 확인 가능
+    format-sql: true # query 보기 예쁘게
+    # use_sql_comments: true
+    # hibernate: 
+    #   ddl-auto: none # DDL(create, alter, drop, none) 정의시 DB의 고유 기능을 사용할 수 있다.
+
+
+    
+
+# JPA의 구현체인 Hibernate가 동작하면서 발생한 SQL의 가독성을 높여준다.
+# spring.jpa.properties.hibernate.format_sql=true
+
+#   batch:
+#     job:
+#       names: ${job.name:NONE}
+
+
+# # spring:
+    # config:
+    #     import: 
+    #         - file:C:/0000_de/radardemon/conf/siteInfoSetting.conf
+    #         # - setting2.yml
