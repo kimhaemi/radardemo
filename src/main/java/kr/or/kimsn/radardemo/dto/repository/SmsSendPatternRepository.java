@@ -17,6 +17,8 @@ public interface SmsSendPatternRepository extends JpaRepository<SmsSendPatternDt
 
     List<SmsSendPatternDto> findByOrderByCodeAscModeDesc();
 
+    SmsSendPatternDto findByActivationAndStatusAndModeAndCodeAndCodedtl(int activation, int status, String mode, String code, String coddtl);
+
     @Query(
         nativeQuery = true,
         value=

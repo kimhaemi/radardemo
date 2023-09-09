@@ -1,17 +1,22 @@
 package kr.or.kimsn.radardemo.process;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import kr.or.kimsn.radardemo.common.DataCommon;
+import kr.or.kimsn.radardemo.common.FormatDateUtil;
 import kr.or.kimsn.radardemo.dto.ReceiveConditionCriteriaDto;
 import kr.or.kimsn.radardemo.dto.ReceiveConditionDto;
 import kr.or.kimsn.radardemo.dto.ReceiveDataDto;
+import kr.or.kimsn.radardemo.dto.SmsSendPatternDto;
 import kr.or.kimsn.radardemo.dto.StationDto;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionCriteriaRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveDataRepository;
+import kr.or.kimsn.radardemo.dto.repository.SmsSendPatternRepository;
+import kr.or.kimsn.radardemo.dto.repository.SmsSendRepository;
 import kr.or.kimsn.radardemo.dto.repository.StationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +31,10 @@ public class StepTwoProcess {
     private final ReceiveConditionRepository receiveConditionRepository; //최종
     private final ReceiveDataRepository receiveDataRepository; //이력
     private final ReceiveConditionCriteriaRepository receiveConditionCriteriaRepository;//경고 기준
+    private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
 
+    private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
+    
 
     public void stepTwo(){
         String gubunStr = "";
@@ -69,16 +77,56 @@ public class StepTwoProcess {
             ReceiveConditionDto rcDto = receiveConditionRepository.findByDataKindAndDataTypeAndSite(dataKindStr, "NQC", site_cd);
             System.out.println("[최종이력상태 조회] : " + rcDto);
 
+            String code = rcDto.getRecv_condition();
+            String codedtl = rcDto.getCodedtl();
+
             // 경고 기준 (횟수 - criterion)
-            ReceiveConditionCriteriaDto rccDto = receiveConditionCriteriaRepository.getReceiveConditionCriteriaList(gubun, rcDto.getRecv_condition(), rcDto.getCodedtl());
+            ReceiveConditionCriteriaDto rccDto = receiveConditionCriteriaRepository.getReceiveConditionCriteriaList(gubun, code, codedtl);
+            System.out.println("[site 별 "+rccDto.getCriterion()+"회 체크]");
+
+            //문자메시지 패턴
+            SmsSendPatternDto smsSendPatternDto = smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(1, 1, "RUN", code, codedtl);
+
+            String dateTime = FormatDateUtil.formatDate("yyyy-MM-dd HH:mm:ss", new Date());
+            
+            System.out.println("[date Time] : " + dateTime);
+
+            String smsPettern = smsSendPatternDto.getPattern();
+            smsPettern = smsPettern.replace("%SITE%", site_cd).replace("TIME", dateTime);
+
+            System.out.println("[문자메시지 패턴] : " + smsPettern);
             
             if(!rcDto.getRecv_condition().equals("ORDI")){
                 //이력 조회
                 List<ReceiveDataDto> rdDto = receiveDataRepository.getReceiveDataList(dataKindStr, rccDto.getCriterion());
                 System.out.println("[이력 조회] : " + rdDto);
-                for(int b=0; b<rdDto.size(); b++){
-                    System.out.println("site 별 3회 체크");
+                int cnt = 0; // 최종이력상태와 결과 값 다른것
+                for(ReceiveDataDto dto : rdDto){
+                    if(!dto.getCodedtl().equals(rcDto.getCodedtl())){
+                        cnt++;
+                    }
                 }
+                System.out.println("[cnt] : " + cnt);
+
+                if(rccDto.getCriterion() == cnt){
+                    //site 수신그룹 담당자에게 문자 전송
+                    // datadfdsfdsfdsfdsfsdfsd
+
+                    String call_to = "01011112222";
+                    
+                    //app sequence
+                    Long appSeq = Long.parseLong(smsSendRepository.getAppContentNextval());
+
+                    //문자 전송(app_send_data) insert
+                    smsSendRepository.gaonAppSendDataSave(appSeq, call_to); //템플릿 코드 넣어야함.
+                    //문자 전송(app_send_contents) insert
+                    smsSendRepository.gaonAppSendContentsSave(appSeq, smsPettern);
+
+                }
+
+                // for(int b=0; b<rdDto.size(); b++){
+                    
+                // }
             }
 
         }
