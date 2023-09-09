@@ -110,7 +110,24 @@ public class StepTwoProcess {
 
                 if(rccDto.getCriterion() == cnt){
                     //site 수신그룹 담당자에게 문자 전송
-                    // datadfdsfdsfdsfdsfsdfsd
+                    // select DISTINCT stm.name, stm.phone_num  from sms_target_group stg 
+                    // left outer join sms_target_group_link stgl
+                    // on stg.gid = stgl.group_id
+                    // left outer join sms_target_member_link stml 
+                    // on stgl.group_id = stml.gid 
+                    // left outer join sms_target_member stm 
+                    // on stml.mid = stm.mid 
+                    // where 1=1
+                    // and stg.status = 1
+                    // and stg.activation = 1
+                    // and stgl.data_type = 'NQC'
+                    // and stm.activation = 1
+                    // and stgl.data_kind = 'RDR' -- param
+                    // and stgl.site = 'KWK' -- param
+                    // order by stm.name asc
+                    // ;
+                    // and  -- 장애
+                    // ;
 
                     String call_to = "01011112222";
                     
