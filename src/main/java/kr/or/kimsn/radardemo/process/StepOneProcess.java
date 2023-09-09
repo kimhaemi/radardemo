@@ -2,6 +2,8 @@ package kr.or.kimsn.radardemo.process;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import kr.or.kimsn.radardemo.common.DataCommon;
 import kr.or.kimsn.radardemo.common.SftpUtil;
 import kr.or.kimsn.radardemo.dto.StationDto;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
+@Service
 public class StepOneProcess extends Thread {
 
     private final StationRepository stationRepository;
@@ -22,16 +25,13 @@ public class StepOneProcess extends Thread {
     private ReceiveConditionRepository receiveConditionRepository; //최종
     private ReceiveDataRepository receiveDataRepository; //이력
     
-    private final static String siteInfo = "./conf/siteInfoSetting.conf";
-    private final static String ipConf = "./conf/siteIPInfoSetting.conf";
-
     @Override
     public void run() {
         String gubunStr = "";
         int srCnt = 0;
         List<StationDto> srDto = null;
 
-        int gubun = Integer.parseInt(DataCommon.getInfoConf(siteInfo, "data_kind"));
+        int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "data_kind"));
         System.out.println("[데몬 구분 int] : " + gubun);
         
         if(gubun == 1) gubunStr = "대형";
@@ -39,7 +39,7 @@ public class StepOneProcess extends Thread {
         if(gubun == 3) gubunStr = "공항";
         System.out.println("[데몬 구분 str] : " + gubunStr);
 
-        String mode = DataCommon.getInfoConf(ipConf, "mode");
+        String mode = DataCommon.getInfoConf("ipInfo", "mode");
         System.out.println("[mode] : " + mode);
 
         if (mode.equals("test")) srCnt = 1;
@@ -55,10 +55,10 @@ public class StepOneProcess extends Thread {
             if(srCnt == 1) site_cd = "TEST";
             if(srCnt > 1) site_cd = srDto.get(a).getSiteCd();
 
-            int port = Integer.parseInt(DataCommon.getInfoConf(ipConf, "PORT"));
-            String site_ip = DataCommon.getInfoConf(ipConf, site_cd+"_IP");
-            String site_username = DataCommon.getInfoConf(ipConf, site_cd+"_ID");
-            String site_pwd = DataCommon.getInfoConf(ipConf, site_cd+"_PASSWORD");
+            int port = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "PORT"));
+            String site_ip = DataCommon.getInfoConf("ipInfo", site_cd+"_IP");
+            String site_username = DataCommon.getInfoConf("ipInfo", site_cd+"_ID");
+            String site_pwd = DataCommon.getInfoConf("ipInfo", site_cd+"_PASSWORD");
 
             try {
 
@@ -78,7 +78,7 @@ public class StepOneProcess extends Thread {
                 if(sftpConnect){
                     String dataKindStr = "";
 
-                     String file_path = DataCommon.getInfoConf(siteInfo, "rdr_path");
+                     String file_path = DataCommon.getInfoConf("siteInfo", "rdr_path");
 
                     if(gubun == 1) dataKindStr = "RDR";
                     if(gubun == 2) dataKindStr = "SDR";
@@ -89,8 +89,8 @@ public class StepOneProcess extends Thread {
                     
                     //파일 O (ORDI - file_ok)
                     if(file_exists){
-                        Long file_size_min = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_min"));
-                        Long file_size_max = Long.parseLong(DataCommon.getInfoConf(siteInfo, "file_size_max"));
+                        Long file_size_min = Long.parseLong(DataCommon.getInfoConf("siteInfo", "file_size_min"));
+                        Long file_size_max = Long.parseLong(DataCommon.getInfoConf("siteInfo", "file_size_max"));
 
                         boolean fileSize = sftp.fileSize(file_path, file_size_min, file_size_max);
                         

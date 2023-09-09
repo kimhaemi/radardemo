@@ -14,7 +14,8 @@ public class ReceiveConditionDto {
     
     @Id
     private String site;
-    private String data_kind;
+    @Column(name = "data_kind")
+    private String dataKind;
     @Column(name = "data_type") private String dataType;
     private String recv_condition;
     private String apply_time;
@@ -22,4 +23,5 @@ public class ReceiveConditionDto {
     private String sms_send;
     private String sms_send_activation;
     private Integer status;
+    private String codedtl;
 }

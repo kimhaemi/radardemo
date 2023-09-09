@@ -8,12 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DataCommon {
 
-    public static String getInfoConf(String infoConf, String tp){
+    private final static String siteInfo = "./conf/siteInfoSetting.conf";
+    private final static String ipInfo = "./../ipConf/siteIPInfoSetting.conf";
+
+    public static String getInfoConf(String infoStr, String tp){
         String confInfo = "";
+        FileInputStream ipInfoIn = null;
 
         try {
             Properties ipInfoProps = new Properties();
-            FileInputStream ipInfoIn = new FileInputStream(infoConf);
+            if(infoStr.equals("siteInfo")) ipInfoIn = new FileInputStream(siteInfo);
+            if(infoStr.equals("ipInfo")) ipInfoIn = new FileInputStream(ipInfo);
             
             ipInfoProps.load(ipInfoIn);
             confInfo = ipInfoProps.getProperty(tp);

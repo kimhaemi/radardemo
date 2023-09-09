@@ -17,6 +17,30 @@ public interface ReceiveConditionCriteriaRepository extends JpaRepository<Receiv
 
     @Query(
         nativeQuery = true,
+        value = 
+        "select\n" + 
+        "  code\n" + 
+        "  , name\n" + 
+        "  , criterion\n" + 
+        "  , comment\n" + 
+        "  , gubun\n" + 
+        "  , codedtl\n" + 
+        "  , sort\n" + 
+        "from receive_condition_criteria rcc\n" + 
+        "where 1=1\n" + 
+        "  and code != 'ORDI'\n" + 
+        "  and gubun = :gubun -- 1 \n" + 
+        "  and code = :code -- 'WARN'\n" + 
+        "  and codedtl = :codeDtl -- 'filesize_no'\n"
+    )
+    ReceiveConditionCriteriaDto getReceiveConditionCriteriaList(
+        @Param("gubun") int gubun,
+        @Param("code") String code,
+        @Param("codeDtl") String codeDtl
+    );
+
+    @Query(
+        nativeQuery = true,
         value=
         "update receive_condition_criteria set \n"+
         "    criterion = :criterion \n"+
