@@ -4,15 +4,20 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import kr.or.kimsn.radardemo.dto.ReceiveConditionCriteriaDto;
 import kr.or.kimsn.radardemo.dto.ReceiveConditionDto;
 import kr.or.kimsn.radardemo.dto.ReceiveDataDto;
 import kr.or.kimsn.radardemo.dto.ReceiveSettingDto;
 import kr.or.kimsn.radardemo.dto.SmsSendOnOffDto;
+import kr.or.kimsn.radardemo.dto.SmsSendPatternDto;
 import kr.or.kimsn.radardemo.dto.StationDto;
+import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionCriteriaRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveDataRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveSettingRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendOnOffRepository;
+import kr.or.kimsn.radardemo.dto.repository.SmsSendPatternRepository;
+import kr.or.kimsn.radardemo.dto.repository.SmsSendRepository;
 import kr.or.kimsn.radardemo.dto.repository.StationRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +28,9 @@ public class QueryService {
     private final StationRepository stationRepository; // site
     private final ReceiveSettingRepository receiveSettingRepository;
     private final SmsSendOnOffRepository smsSendOnOffRepository;
+    private final ReceiveConditionCriteriaRepository receiveConditionCriteriaRepository;//경고 기준
+    private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
+    private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
 
     private final ReceiveConditionRepository receiveConditionRepository; // 최종
     private final ReceiveDataRepository receiveDataRepository; // 이력
@@ -37,7 +45,38 @@ public class QueryService {
         return receiveSettingRepository.findByDataKindAndPermittedWatchAndStatus(dataKindStr, 1, 1);
     }
 
-    public void InsReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
+    // 최종 처리 상태
+    public ReceiveConditionDto getReceiveCondition(String dataKindStr, String data_type, String site_cd){
+        return receiveConditionRepository.findByDataKindAndDataTypeAndSite(dataKindStr, data_type, site_cd);
+    }
+
+    // 경고 기준 (횟수 - criterion)
+    public ReceiveConditionCriteriaDto getReceiveConditionCriteria(int gubun, String code, String codedtl){
+        return receiveConditionCriteriaRepository.getReceiveConditionCriteriaList(gubun, code, codedtl);
+    }
+
+    //문자메시지 패턴
+    public SmsSendPatternDto getSmsSendPattern(int activation, int status, String mode, String code, String codedtl){
+        return smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(activation, status, mode, code, codedtl);
+    }
+
+    // data 처리 이력
+    public List<ReceiveDataDto> getReceiveDataList(String site, String dataKindStr, int count){
+        return receiveDataRepository.getReceiveDataList(site, dataKindStr, count);
+    }
+
+    //app sequence
+    public Long getAppContentNextval(){
+        return Long.parseLong(smsSendRepository.getAppContentNextval());
+    }
+
+    //문자 발송 여부 update
+    public Integer updateReceiveCondition(int sms_send, String recv_condition, String site, String dataKindStr, String dataType){
+        return receiveConditionRepository.updateReceiveCondition(sms_send, recv_condition, site, dataKindStr, dataType);
+        //select * from receive_condition rc where recv_condition = 'TOTA' and site = 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
+    }
+
+    public void insReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
             String apply_time, String last_check_time, int sms_send, int status, String codedtl) {
         ReceiveConditionDto rcDto = new ReceiveConditionDto();
 
@@ -70,7 +109,7 @@ public class QueryService {
         receiveConditionRepository.save(rcDto);
     }
 
-    public void InsReceiveData(String dataKindStr, String site_cd, String dataType, String data_time, String data_kst,
+    public void insReceiveData(String dataKindStr, String site_cd, String dataType, String data_time, String data_kst,
             String recv_time,
             String recv_condition, String recv_condition_check_time, String file_name, Long file_size, String codedtl) {
         ReceiveDataDto rdDto = new ReceiveDataDto();
@@ -103,4 +142,14 @@ public class QueryService {
         receiveDataRepository.save(rdDto);
     }
 
+    //문자 전송(app_send_data) insert
+    public void insGaonAppSendDataSave(Long appSeq, String call_to, String call_from){
+        smsSendRepository.gaonAppSendDataSave(appSeq, call_to, call_from); //템플릿 코드 넣어야함.
+    }
+
+    //문자 전송(app_send_contents) insert
+    //문자 전송(app_send_contents) insert
+    public void intGaonAppSendContentsSave(Long appSeq, String smsPettern){
+        smsSendRepository.gaonAppSendContentsSave(appSeq, smsPettern);
+    }
 }

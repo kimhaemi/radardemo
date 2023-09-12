@@ -3,6 +3,7 @@ package kr.or.kimsn.radardemo.dto;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Table;
 
 import kr.or.kimsn.radardemo.dto.pkColumn.ReceiveDataPk;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @IdClass(ReceiveDataPk.class)
+@Table(name = "receive_data", catalog = "watchdog")
 public class ReceiveDataDto {
     
     @Id

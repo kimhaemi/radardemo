@@ -17,7 +17,7 @@ public class ReceiveConditionCriteriaDto {
     @Id
     private String code;
     private String name;
-    private Integer criterion;
+    private int criterion;
     private String comment;
     @Id
     private int gubun;

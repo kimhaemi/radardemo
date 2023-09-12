@@ -21,20 +21,22 @@ public interface ReceiveConditionRepository extends JpaRepository<ReceiveConditi
     @Query(
         nativeQuery = true,
         value=
-        "update receive_condition set\n"+
-		"  sms_send_activation = :sms_send_activation \n"+
+        "update watchdog.receive_condition set\n"+
+		"  sms_send = :sms_send \n"+
 	    "where 1=1 \n"+
-		"  and data_kind = :data_kind \n"+
+        "  and recv_condition = :recv_condition \n"+
 		"  and site = :site \n"+
+        "  and data_kind = :dataKindStr \n"+
 		"  and data_type = :dataType \n"
     )
     @Transactional
     @Modifying
-    // 지점/자료별 문자 발송 설정 일괄 수정
-    Integer setReceiveConditionModify(
-        @Param("sms_send_activation") int sms_send_activation,
-        @Param("data_kind") String data_kind,
-        @Param("site") String site,
+    // 지점별 SMS 발송 여부 update
+    Integer updateReceiveCondition(
+        @Param("sms_send") int sms_send, 
+        @Param("recv_condition") String recv_condition, 
+        @Param("site") String site, 
+        @Param("dataKindStr") String dataKindStr, 
         @Param("dataType") String dataType
     );
 

@@ -1,15 +1,5 @@
 package kr.or.kimsn.radardemo.common;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -19,14 +9,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-
-import kr.or.kimsn.radardemo.dto.ReceiveSettingDto;
 
 @Slf4j
 @Configuration
@@ -37,7 +24,6 @@ public class SftpUtil {
     private Session session;
     private Channel channel;
     private ChannelSftp channelSftp;
-    private ChannelExec channelExec;
 
     // sftp 서버 연결
     public boolean open(String host, String id, String password, int port) {
@@ -92,9 +78,6 @@ public class SftpUtil {
         }
         if (channelSftp != null) {
             channelSftp.disconnect();
-        }
-        if (channelExec != null) {
-            channelExec.disconnect();
         }
     }
 

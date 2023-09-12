@@ -126,8 +126,7 @@ public class StepOneProcess extends Thread {
                     // 자료감시 설정 on
                     if (rsDto.getPermittedWatch() == 1) {
                         System.out.println("[자료감시 설정 on]");
-                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern,
-                                timeZone);
+                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern, timeZone);
                         System.out.println("[파일존재유무] : " + file_exists);
 
                         // 파일 O (ORDI - file_ok)
@@ -145,20 +144,17 @@ public class StepOneProcess extends Thread {
                             // 파일 품질 정상 (ORDI - filesize_ok)
                             if (kb > file_size_min) {
                                 recv_condition = "ORDI";
-                                codedtl = "filesize_ok";
+                                codedtl = "ok";
                                 recv_condition_data = "RECV";
-                                System.out.println(
-                                        "[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]");
+                                System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]");
                                 System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table2 - receive_data]");
                             } else {
                                 // 파일 품질 이상 (WARN - filesize_no)
                                 recv_condition = "WARN";
                                 codedtl = "filesize_no";
                                 recv_condition_data = "MISS";
-                                System.out.println(
-                                        "[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]");
-                                System.out
-                                        .println("[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]");
+                                System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]");
+                                System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]");
                             }
 
                         } else {
@@ -184,7 +180,7 @@ public class StepOneProcess extends Thread {
                 } else {
                     // 접속 X (TOTA)
                     recv_condition = "TOTA";
-                    codedtl = "file_no";
+                    codedtl = "network_no";
 
                     System.out.println("[접속 실패 query insert table1 - receive_condition]");
                     // queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
@@ -198,10 +194,10 @@ public class StepOneProcess extends Thread {
 
                 }
 
-                queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
+                queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
                         recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-                queryService.InsReceiveData(dataKindStr, site_cd, dataType, data_time,
-                        data_kst, data_kst, recv_condition, recv_condition_check_time, file_name,
+                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time,
+                        data_kst, data_kst, recv_condition_data, recv_condition_check_time, file_name,
                         file_size, codedtl);
             } catch (Exception e) {
                 // log.debug("error : " + e);
