@@ -20,30 +20,31 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class QueryService {
 
-    private final StationRepository stationRepository; //site
+    private final StationRepository stationRepository; // site
     private final ReceiveSettingRepository receiveSettingRepository;
     private final SmsSendOnOffRepository smsSendOnOffRepository;
 
-    private final ReceiveConditionRepository receiveConditionRepository; //최종
-    private final ReceiveDataRepository receiveDataRepository; //이력
+    private final ReceiveConditionRepository receiveConditionRepository; // 최종
+    private final ReceiveDataRepository receiveDataRepository; // 이력
 
-    //site 조회
-    public List<StationDto> getStation(int gubun){
+    // site 조회
+    public List<StationDto> getStation(int gubun) {
         return stationRepository.findByGubunOrderBySortOrder(gubun);
     }
 
-    //자료 수신 처리 설정 조회
-    public ReceiveSettingDto getrRceiveSetting (String dataKindStr){
+    // 자료 수신 처리 설정 조회
+    public ReceiveSettingDto getrRceiveSetting(String dataKindStr) {
         return receiveSettingRepository.findByDataKindAndPermittedWatchAndStatus(dataKindStr, 1, 1);
     }
-    
-    public void InsReceiveCondition (String site_cd, String dataKindStr, String dataType, String recv_condition, 
-                                     String apply_time, String last_check_time, int sms_send, int status, String codedtl) {
+
+    public void InsReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
+            String apply_time, String last_check_time, int sms_send, int status, String codedtl) {
         ReceiveConditionDto rcDto = new ReceiveConditionDto();
 
         SmsSendOnOffDto onOffDto = smsSendOnOffRepository.findByCode("STOPSMS");
         int onOffVal = onOffDto.getValue();
 
+        System.out.println("[==InsReceiveCondition==]");
         System.out.println(" site : " + site_cd);
         System.out.println(" data_kind : " + dataKindStr);
         System.out.println(" data_type : " + dataType);
@@ -54,7 +55,7 @@ public class QueryService {
         System.out.println(" sms_send_activation : " + onOffVal);
         System.out.println(" status : " + status);
         System.out.println(" codedtl : " + codedtl);
-        
+
         rcDto.setSite(site_cd);
         rcDto.setDataKind(dataKindStr);
         rcDto.setDataType(dataType);
@@ -65,14 +66,16 @@ public class QueryService {
         rcDto.setSms_send_activation(onOffVal);
         rcDto.setStatus(status);
         rcDto.setCodedtl(codedtl);
-        
+
         receiveConditionRepository.save(rcDto);
     }
 
-    public void InsReceiveData (String dataKindStr, String site_cd, String dataType, String data_time, String data_kst, String recv_time,
-                                String recv_condition, String recv_condition_check_time, String file_name, Long file_size, String codedtl) {
+    public void InsReceiveData(String dataKindStr, String site_cd, String dataType, String data_time, String data_kst,
+            String recv_time,
+            String recv_condition, String recv_condition_check_time, String file_name, Long file_size, String codedtl) {
         ReceiveDataDto rdDto = new ReceiveDataDto();
 
+        System.out.println("[==InsReceiveData==]");
         System.out.println("data_kind : " + dataKindStr);
         System.out.println("site : " + site_cd);
         System.out.println("data_type : " + dataType);
@@ -100,5 +103,4 @@ public class QueryService {
         receiveDataRepository.save(rdDto);
     }
 
-    
 }

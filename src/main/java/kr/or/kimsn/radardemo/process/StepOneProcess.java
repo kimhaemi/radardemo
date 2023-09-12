@@ -198,11 +198,11 @@ public class StepOneProcess extends Thread {
 
                 }
 
-                // queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
-                // recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-                // queryService.InsReceiveData(dataKindStr, site_cd, dataType, data_time,
-                // data_kst, data_kst, recv_condition, recv_condition_check_time, file_name,
-                // file_size, codedtl);
+                queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
+                        recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
+                queryService.InsReceiveData(dataKindStr, site_cd, dataType, data_time,
+                        data_kst, data_kst, recv_condition, recv_condition_check_time, file_name,
+                        file_size, codedtl);
             } catch (Exception e) {
                 // log.debug("error : " + e);
                 System.out.println("StepOneProcess run Error - " + e);
