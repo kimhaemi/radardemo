@@ -1,10 +1,18 @@
 package kr.or.kimsn.radardemo.common;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,22 +25,22 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import kr.or.kimsn.radardemo.dto.ReceiveSettingDto;
-import kr.or.kimsn.radardemo.dto.repository.ReceiveSettingRepository;
 
 @Slf4j
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class SftpUtil {
 
     private JSch jSch;
+    private Session session;
     private Channel channel;
     private ChannelSftp channelSftp;
-
-    private final ReceiveSettingRepository receiveSettingRepository;
 
     // sftp 서버 연결
     public boolean open(String host, String id, String password, int port) {
         boolean result = false;
+
+        int connectTimeOut = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "connectTimeOut"));
 
         // JSch 객체를 생성
         jSch = new JSch();
@@ -42,7 +50,7 @@ public class SftpUtil {
             // jSch.addIdentity(privateKey);
 
             // JSchSession 객체를 생성 (사용자 이름, 접속할 호스트, 포트 전달)
-            Session session = jSch.getSession(id, host, port);
+            session = jSch.getSession(id, host, port);
             session.setPassword(password);
 
             // 기타 설정 적용
@@ -55,7 +63,7 @@ public class SftpUtil {
 
             // sftp 채널 열기 및 접속
             channel = session.openChannel("sftp");
-            channel.connect(5000); // 5초
+            channel.connect(connectTimeOut*1000); // 10초
             result = true;
 
             // 채널을 FTP 용 채널 객체로 캐스팅
@@ -73,7 +81,15 @@ public class SftpUtil {
 
     // sftp 서버 연결 종료
     private void close() {
-
+        if (session != null) {
+            session.disconnect();
+        }
+        if (channel != null) {
+            channel.disconnect();
+        }
+        if(channelSftp != null) {
+        	channelSftp.disconnect();
+        }
     }
 
     /**
@@ -82,40 +98,13 @@ public class SftpUtil {
      * @param path 디렉토리 (or 파일)
      * @return
      */
-    public boolean fileExists(String path, String siteCd, String dataKind) {
+    public boolean fileExists(String path, String fileName, String siteCd, String dataKind, String filePattern, String timeZone) {
         System.out.println("[파일 경로] : " + path);
-
-        String fileName = "";
-
-        // 1. 자료감시설정 on
-        // 2. 파일 패턴으로 파일명 찾기
-        try {
-            ReceiveSettingDto rsDto = receiveSettingRepository.findByDataKindAndPermittedWatchAndStatus(dataKind, 1, 1);
-            System.out.println(rsDto);
-            String filePattern = rsDto.getFilename_pattern();
-            String timeZone = rsDto.getTime_zone();
-            String dateTime = "";
-
-            if (timeZone.equals("K"))
-                dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
-            if (timeZone.equals("U"))
-                dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
-            System.out.println(FormatDateUtil.changeKstToUtc(new Date()));
-
-            System.out.println("[date Time] : " + dateTime);
-            System.out.println("[siteCd] : " + siteCd);
-
-            fileName = filePattern.replace("%site%", siteCd).replace("%yyyyMMddHHmm%", dateTime);
-            System.out.println("[파일 패턴] : " + filePattern);
-            System.out.println("[파일 명] : " + fileName);
-        } catch (Exception e) {
-            System.out.println("파일 존재여부 확인 에러 - " + e);
-        }
 
         Vector res = null;
         try {
             res = channelSftp.ls(path + "/" + fileName);
-            System.out.println("[파일 존재여부 확인]" + res.size());
+            System.out.println("[파일 존재여부 확인]  : " + res.size());
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 return false;
@@ -125,20 +114,39 @@ public class SftpUtil {
     }
 
     // 파일 사이즈
-    public boolean fileSize(String path, Long file_size_min, Long file_size_max) {
-        System.out.println("[파일 경로] : " + path);
-        // System.out.println("[파일 명] : " + file.getName());
-
+    public Long fileSize(String path, String fileName, Long file_size_min, Long file_size_max) {
+        System.out.println("[file size check]");
+        Long fileSize = 0L;
+        // BufferedInputStream bis = null;
         Vector res = null;
         try {
-            res = channelSftp.ls(path);
-            System.out.println("[파일 존재여부 확인]" + res.size());
+            res = channelSftp.ls(path+"/"+fileName);
+
+            System.out.println("res : " + res.get(0));
+            System.out.println("res : " + res.elements());
+
+            // FileChannel fileChannel = FileChannel.open(paths);
+
+            // System.out.println("fileChannel :::: " + fileChannel.size());
+
+            // channelSftp.cd(path);
+
+			// File file = new File(fileName);
+            // System.out.println("" + file.size());
+
+            // is = channelSftp.get(path + "/" + fileName);
+            // System.out.println("[파일 size]" + is);
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-                return false;
+                return 0L;
             }
+        // } catch (IOException e) {
+        //     System.out.println("file size error : " + e);
+        //     return 0L;
+        //     // if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+        //     // }
         }
-        return res != null && !res.isEmpty();
+        return fileSize;
     }
 
 }

@@ -20,8 +20,8 @@ public class ReceiveConditionDto {
     private String recv_condition;
     private String apply_time;
     private String last_check_time;
-    private String sms_send;
-    private String sms_send_activation;
-    private Integer status;
+    private int sms_send;
+    private int sms_send_activation;
+    private int status;
     private String codedtl;
 }

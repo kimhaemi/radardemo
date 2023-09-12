@@ -3,6 +3,8 @@ package kr.or.kimsn.radardemo.process;
 import java.util.Date;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import kr.or.kimsn.radardemo.common.DataCommon;
@@ -19,9 +21,9 @@ import kr.or.kimsn.radardemo.dto.repository.SmsSendPatternRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendRepository;
 import kr.or.kimsn.radardemo.dto.repository.StationRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+// @Slf4j
 @Service
 @RequiredArgsConstructor
 public class StepTwoProcess {
@@ -34,12 +36,13 @@ public class StepTwoProcess {
     private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
 
     private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
-    
 
+    private List<StationDto> srDto;
+    
+    @Transactional
     public void stepTwo(){
         String gubunStr = "";
         int srCnt = 0;
-        List<StationDto> srDto = null;
 
         int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "data_kind"));
         System.out.println("[데몬 구분 int] : " + gubun);
@@ -130,12 +133,13 @@ public class StepTwoProcess {
                     // ;
 
                     String call_to = "01011112222";
+                    String call_from = DataCommon.getInfoConf("siteInfo", "call_from");
                     
                     //app sequence
                     Long appSeq = Long.parseLong(smsSendRepository.getAppContentNextval());
 
                     //문자 전송(app_send_data) insert
-                    smsSendRepository.gaonAppSendDataSave(appSeq, call_to); //템플릿 코드 넣어야함.
+                    smsSendRepository.gaonAppSendDataSave(appSeq, call_to, call_from); //템플릿 코드 넣어야함.
                     //문자 전송(app_send_contents) insert
                     smsSendRepository.gaonAppSendContentsSave(appSeq, smsPettern);
 
