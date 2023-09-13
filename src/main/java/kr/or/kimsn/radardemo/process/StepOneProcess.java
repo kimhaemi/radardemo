@@ -72,7 +72,7 @@ public class StepOneProcess extends Thread {
             String site_username = DataCommon.getInfoConf("ipInfo", site_cd + "_ID");
             String site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD");
             if(srCnt > 1 && gubun == 2){
-                // site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD")+"#";
+                site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD")+"#";
             }
 
             try {
