@@ -95,8 +95,8 @@ public class QueryService {
     }
 
     //이력 update
-    public Integer updateReceiveData(String new_recv_condition, String site, String dataKindStr, String dataType, String where_recv_condition){
-        return receiveDataRepository.updateReceiveData(new_recv_condition, site, dataKindStr, dataType, where_recv_condition);
+    public Integer updateReceiveData(String new_recv_condition, int sms_send, String site, String dataKindStr, String dataType, String where_recv_condition){
+        return receiveDataRepository.updateReceiveData(new_recv_condition, sms_send, site, dataKindStr, dataType, where_recv_condition);
     }
 
     public void insReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
@@ -159,7 +159,7 @@ public class QueryService {
         rdDto.setRecv_condition(recv_condition);
         rdDto.setRecv_condition_check_time(recv_condition_check_time);
         rdDto.setFile_name(null);
-        rdDto.setFile_size(0);
+        rdDto.setFile_size(0L);
         rdDto.setCodedtl(codedtl);
 
         receiveDataRepository.save(rdDto);

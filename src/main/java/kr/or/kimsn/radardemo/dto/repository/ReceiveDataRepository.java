@@ -57,7 +57,8 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
         "    recv_condition_check_time,  \n" +
         "    file_name,  \n" +
         "    file_size,  \n" +
-        "    codedtl \n" + 
+        "    codedtl, \n" + 
+        "    sms_send \n" + 
         "from watchdog.receive_data \n" +
         "where 1=1 \n" +
         "  and site = :site \n" +
@@ -82,7 +83,8 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
         nativeQuery = true,
         value=
         "update watchdog.receive_data set  \n" +
-        "  recv_condition = :new_recv_condition \n" +
+        "    recv_condition = :new_recv_condition \n" +
+        "  , sms_send = :sms_send \n" +
         // "  recv_condition_check_time = now() \n" +
         "where 1=1  \n" +
         "  and site =:site -- param \n" +
@@ -95,6 +97,7 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
     // 결과 이력 update
     Integer updateReceiveData(
         @Param("new_recv_condition") String new_recv_condition,
+        @Param("sms_send") int sms_send,
         @Param("site") String site, 
         @Param("dataKindStr") String dataKindStr, 
         @Param("dataType") String dataType,

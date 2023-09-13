@@ -124,7 +124,8 @@ public class StepTwoProcess {
             // 이력 update
             if(where_recv_condition.equals("ORDI")) where_recv_condition = "RECV";
             if(where_recv_condition.equals("WARN")) where_recv_condition = "MISS";
-            Integer hist = queryService.updateReceiveData(new_recv_condition, site_cd, dataKindStr, dataType, where_recv_condition);
+            
+            Integer hist = queryService.updateReceiveData(new_recv_condition, 0, site_cd, dataKindStr, dataType, where_recv_condition);
 
             System.out.println("[total] ::: " + total);
             System.out.println("[hist] ::: " + hist);

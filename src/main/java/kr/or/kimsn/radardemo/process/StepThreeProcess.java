@@ -111,8 +111,8 @@ public class StepThreeProcess {
             List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, criterion);
             // System.out.println("[이력 조회] : " + rdDto);
             int cnt = 0; // 최종이력상태와 결과 값 같은것
+            String recv_con = "";
             for(ReceiveDataDto dto : rdDto){
-                String recv_con = "";
                 // ORDI	정상	0	정상	1	ok
                 // RETR	복구	3	자료 크기가 연속으로 N회 이상 정상일때	1	filesize_ok
                 // RETR	복구	3	비 정상에서 복구되어 정상의 범위에 들 경우	1	file_ok
@@ -173,6 +173,8 @@ public class StepThreeProcess {
                 System.out.println("[문자 전송 여부 update]");
                 int sms_send = 1;
                 queryService.updateReceiveCondition(code, sms_send, code, site_cd, dataKindStr, "NQC");
+                queryService.updateReceiveData(code, 0, site_cd, dataKindStr, "NQC", code);
+
             } else {
                 System.out.println("[문자 전송 체크 - 기준자료] : " + rccDto.getCriterion());
                 System.out.println("[문자 전송 체크 - data cnt] : " + cnt);

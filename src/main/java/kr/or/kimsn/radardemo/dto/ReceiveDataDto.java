@@ -28,7 +28,8 @@ public class ReceiveDataDto {
     private String recv_condition;
     private String recv_condition_check_time;
     private String file_name;
-    private Integer file_size;
+    private Long file_size;
     private String codedtl;
+    private int sms_send;
 
 }
