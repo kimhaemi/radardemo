@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import kr.or.kimsn.radardemo.common.DataCommon;
 import kr.or.kimsn.radardemo.process.StepOneProcess;
+import kr.or.kimsn.radardemo.process.StepThreeProcess;
 import kr.or.kimsn.radardemo.process.StepTwoProcess;
 import kr.or.kimsn.radardemo.service.QueryService;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +32,14 @@ public class Scheduler {
 
     //     *           *　　　　　　*　　　　　　*　　　　　　*　　　　　　*
     // 초(0-59)   분(0-59)　　시간(0-23)　　일(1-31)　　월(1-12)　　요일(0-7)
-    //@Scheduled(cron = "30 0,5,10,15,20,25,30,35,40,45,50,55 * * * ?") // 5분 30초
-    @Scheduled(fixedDelay = 30000) //30초마다
+    // @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * ?") // 6분 00초
+    @Scheduled(fixedDelay = 60000) //30초마다
     @Async
     public void cronJobSch() throws InterruptedException {
         
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        System.out.println("[site 접속 및 파일 처리 Start] : " + LocalDateTime.now().format(dtf));
         System.out.println("[=================== 1번째 프로세스 ===================]");
+        System.out.println("[site 접속 및 파일 처리 Start] : " + LocalDateTime.now().format(dtf));
         
         // StepOneProcess oneProc = new StepOneProcess(queryService);
         // oneProc.start();
@@ -46,12 +47,23 @@ public class Scheduler {
         System.out.println("[site 접속 및 파일 처리 end] : " + LocalDateTime.now().format(dtf));
         
         int PauseTime = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "PauseTime"));
+        
         // Thread.sleep(PauseTime*1000); //20초
         System.out.println("["+PauseTime+"초 후 다음] : " + LocalDateTime.now().format(dtf));
         System.out.println("[=================== 2번째 프로세스 ===================]");
+        System.out.println("[결과 data update - 복구, 정상 등등]");
+        
+        // StepTwoProcess twoProc = new StepTwoProcess(queryService);
+        // twoProc.stepTwo();
+
+        // Thread.sleep(PauseTime*1000); //20초
+        System.out.println("["+PauseTime+"초 후 다음] : " + LocalDateTime.now().format(dtf));
+        System.out.println("[=================== 3번째 프로세스 ===================]");
         System.out.println("[문자 전송 여부 체크 start] : " + LocalDateTime.now().format(dtf));
-        StepTwoProcess twoProc = new StepTwoProcess(queryService);
-        twoProc.stepTwo();
+
+        StepThreeProcess threeProc = new StepThreeProcess(queryService);
+        threeProc.stepThree();
+        
         System.out.println("[문자 전송 여부 체크 end] : " + LocalDateTime.now().format(dtf));
 
 

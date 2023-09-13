@@ -13,6 +13,9 @@ public interface ReceiveConditionCriteriaRepository extends JpaRepository<Receiv
     //경고기준설정 조회
     List<ReceiveConditionCriteriaDto> findByOrderByGubunAscSortAsc();
 
+    //경고기준설정 조회 - site 구분
+    List<ReceiveConditionCriteriaDto> findByGubun(int gubun);
+
     @Query(
         nativeQuery = true,
         value = 
@@ -31,7 +34,8 @@ public interface ReceiveConditionCriteriaRepository extends JpaRepository<Receiv
         "  and code = :code -- 'WARN'\n" + 
         "  and codedtl = :codedtl -- 'filesize_no'\n"
     )
-    ReceiveConditionCriteriaDto getReceiveConditionCriteriaList(
+    //경고기준설정 조회(단건)
+    ReceiveConditionCriteriaDto getReceiveConditionCriteria(
         @Param("gubun") int gubun,
         @Param("code") String code,
         @Param("codedtl") String codedtl

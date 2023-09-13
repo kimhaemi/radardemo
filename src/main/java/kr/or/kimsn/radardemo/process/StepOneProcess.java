@@ -40,6 +40,8 @@ public class StepOneProcess extends Thread {
         int sms_send = 0;
         String file_name = "";
         Long file_size = 0L;
+        String errStr = "";
+        String errStrData = "";
 
         int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "data_kind"));
         System.out.println("[데몬 구분 int] : " + gubun);
@@ -74,10 +76,8 @@ public class StepOneProcess extends Thread {
 
         for (int a = 0; a < srCnt; a++) {
             String site_cd = "";
-            if (srCnt == 1)
-                site_cd = "TEST";
-            if (srCnt > 1)
-                site_cd = srDto.get(a).getSiteCd();
+            if (srCnt == 1) site_cd = "TEST";
+            if (srCnt > 1) site_cd = srDto.get(a).getSiteCd();
 
             int port = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "PORT"));
             String site_ip = DataCommon.getInfoConf("ipInfo", site_cd + "_IP");
@@ -146,30 +146,26 @@ public class StepOneProcess extends Thread {
                                 recv_condition = "ORDI";
                                 codedtl = "ok";
                                 recv_condition_data = "RECV";
-                                System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]");
-                                System.out.println("[자료 수신 (ORDI - filesize_ok) query insert table2 - receive_data]");
+                                errStr = "[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]";
+                                errStrData = "[자료 수신 (ORDI - filesize_ok) query insert table2 - receive_data]";
+                                
                             } else {
                                 // 파일 품질 이상 (WARN - filesize_no)
                                 recv_condition = "WARN";
                                 codedtl = "filesize_no";
                                 recv_condition_data = "MISS";
-                                System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]");
-                                System.out.println("[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]");
+                                errStr = "[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]";
+                                errStrData = "[파일 품질 이상 (WARN - filesize_no) query insert table2 - receive_data]";
                             }
 
                         } else {
                             // 파일 X (WARN - file_no)
                             recv_condition = "WARN";
                             codedtl = "file_no";
-                            System.out.println("[자료 미수신 (WARN - file_no) query insert table1 - receive_condition]");
-                            // queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
-                            // recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-
-                            System.out.println("[자료 미수신 (WARN - file_no) query insert table2 - receive_data]");
                             recv_condition_data = "MISS";
-                            // queryService.InsReceiveData(dataKindStr, site_cd, dataType, data_time,
-                            // data_kst, data_kst, recv_condition, recv_condition_check_time, file_name,
-                            // file_size, codedtl);
+                            errStr = "[자료 미수신 (WARN - file_no) query insert table1 - receive_condition]";
+                            errStrData = "[자료 미수신 (WARN - file_no) query insert table2 - receive_data]";
+                            
                         }
 
                     } else {
@@ -181,24 +177,18 @@ public class StepOneProcess extends Thread {
                     // 접속 X (TOTA)
                     recv_condition = "TOTA";
                     codedtl = "network_no";
-
-                    System.out.println("[접속 실패 query insert table1 - receive_condition]");
-                    // queryService.InsReceiveCondition(site_cd, dataKindStr, dataType,
-                    // recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-
-                    System.out.println("[접속 실패 query insert table2 - receive_data]");
                     recv_condition_data = "MISS";
-                    // queryService.InsReceiveData(dataKindStr, site_cd, dataType, data_time,
-                    // data_kst, data_kst, recv_condition, recv_condition_check_time, file_name,
-                    // file_size, codedtl);
+
+                    errStr = "[접속 실패 query insert table1 - receive_condition]";
+                    errStrData = "[접속 실패 query insert table2 - receive_data]";
 
                 }
 
-                queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
-                        recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time,
-                        data_kst, data_kst, recv_condition_data, recv_condition_check_time, file_name,
-                        file_size, codedtl);
+                System.out.println(errStr);
+                System.out.println(errStrData);
+
+                queryService.insReceiveCondition(site_cd, dataKindStr, dataType, recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
+                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time, data_kst, data_kst, recv_condition_data, recv_condition_check_time, file_name, file_size, codedtl);
             } catch (Exception e) {
                 // log.debug("error : " + e);
                 System.out.println("StepOneProcess run Error - " + e);

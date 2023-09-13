@@ -8,6 +8,7 @@ import kr.or.kimsn.radardemo.dto.ReceiveConditionCriteriaDto;
 import kr.or.kimsn.radardemo.dto.ReceiveConditionDto;
 import kr.or.kimsn.radardemo.dto.ReceiveDataDto;
 import kr.or.kimsn.radardemo.dto.ReceiveSettingDto;
+import kr.or.kimsn.radardemo.dto.SmsSendMemberDto;
 import kr.or.kimsn.radardemo.dto.SmsSendOnOffDto;
 import kr.or.kimsn.radardemo.dto.SmsSendPatternDto;
 import kr.or.kimsn.radardemo.dto.StationDto;
@@ -15,6 +16,7 @@ import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionCriteriaRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveDataRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveSettingRepository;
+import kr.or.kimsn.radardemo.dto.repository.SmsSendMemberRepositroy;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendOnOffRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendPatternRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendRepository;
@@ -31,6 +33,7 @@ public class QueryService {
     private final ReceiveConditionCriteriaRepository receiveConditionCriteriaRepository;//경고 기준
     private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
     private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
+    private final SmsSendMemberRepositroy smsSendMemberRepositroy; //수신자 그룹
 
     private final ReceiveConditionRepository receiveConditionRepository; // 최종
     private final ReceiveDataRepository receiveDataRepository; // 이력
@@ -50,9 +53,14 @@ public class QueryService {
         return receiveConditionRepository.findByDataKindAndDataTypeAndSite(dataKindStr, data_type, site_cd);
     }
 
-    // 경고 기준 (횟수 - criterion)
+    // 경고 기준 (횟수 - criterion) - List
+    public List<ReceiveConditionCriteriaDto> getReceiveConditionCriteriaList(int gubun){
+        return receiveConditionCriteriaRepository.findByGubun(gubun);
+    }
+
+    // 경고 기준 (횟수 - criterion) - 단건
     public ReceiveConditionCriteriaDto getReceiveConditionCriteria(int gubun, String code, String codedtl){
-        return receiveConditionCriteriaRepository.getReceiveConditionCriteriaList(gubun, code, codedtl);
+        return receiveConditionCriteriaRepository.getReceiveConditionCriteria(gubun, code, codedtl);
     }
 
     //문자메시지 패턴
@@ -65,15 +73,30 @@ public class QueryService {
         return receiveDataRepository.getReceiveDataList(site, dataKindStr, count);
     }
 
+    // data 처리 이력
+    public List<ReceiveDataDto> getReceiveDataCodedtlList(String site, String dataKindStr, int count, String codedtl){
+        return receiveDataRepository.getReceiveDataCodedtlList(site, dataKindStr, count, codedtl);
+    }
+
+    //site 수신그룹 담당자
+    public List<SmsSendMemberDto> getSmsSendMemberList(String data_kind, String site){
+        return smsSendMemberRepositroy.getSmsSendMemberList(data_kind, site);
+    }
+
     //app sequence
     public Long getAppContentNextval(){
         return Long.parseLong(smsSendRepository.getAppContentNextval());
     }
 
-    //문자 발송 여부 update
-    public Integer updateReceiveCondition(int sms_send, String recv_condition, String site, String dataKindStr, String dataType){
-        return receiveConditionRepository.updateReceiveCondition(sms_send, recv_condition, site, dataKindStr, dataType);
+    //최종 결과 update
+    public Integer updateReceiveCondition(String new_recv_condition, int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType){
+        return receiveConditionRepository.updateReceiveCondition(new_recv_condition, sms_send, where_recv_condition, site, dataKindStr, dataType);
         //select * from receive_condition rc where recv_condition = 'TOTA' and site = 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
+    }
+
+    //이력 update
+    public Integer updateReceiveData(String new_recv_condition, String site, String dataKindStr, String dataType, String where_recv_condition){
+        return receiveDataRepository.updateReceiveData(new_recv_condition, site, dataKindStr, dataType, where_recv_condition);
     }
 
     public void insReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,

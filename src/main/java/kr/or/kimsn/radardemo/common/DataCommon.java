@@ -3,9 +3,6 @@ package kr.or.kimsn.radardemo.common;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class DataCommon {
 
     private final static String siteInfo = "./conf/siteInfoSetting.conf";
