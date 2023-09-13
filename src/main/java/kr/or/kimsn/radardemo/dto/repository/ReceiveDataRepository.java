@@ -30,10 +30,11 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
         "    codedtl \n" + 
         "from watchdog.receive_data \n" +
         "where 1=1 \n" +
-        "  and site = :site \n" +
+        "  and (:site is null or site = :site) \n" +
         "  and data_kind  = :data_kind \n" +
         "  and data_type  = 'NQC' \n" +
-        "order by data_kind, site, data_type, data_kst desc \n"+
+        // "  and DATE_FORMAT(data_time, '%Y%m%d') = DATE_FORMAT(now(), '%Y%m%d') \n" +
+        "order by data_kind, site, data_type, data_time desc \n"+
         "limit :count \n"
     )
     // 지점별 과거자료 검색
@@ -57,8 +58,7 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
         "    recv_condition_check_time,  \n" +
         "    file_name,  \n" +
         "    file_size,  \n" +
-        "    codedtl, \n" + 
-        "    sms_send \n" + 
+        "    codedtl \n" +
         "from watchdog.receive_data \n" +
         "where 1=1 \n" +
         "  and site = :site \n" +
@@ -84,24 +84,26 @@ public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, Rec
         value=
         "update watchdog.receive_data set  \n" +
         "    recv_condition = :new_recv_condition \n" +
-        "  , sms_send = :sms_send \n" +
+        "  , codedtl = :new_codedtl \n" +
         // "  recv_condition_check_time = now() \n" +
         "where 1=1  \n" +
-        "  and site =:site -- param \n" +
+        "  and site = :site -- param \n" +
         "  and data_kind  = :dataKindStr -- param \n" +
         "  and data_type  = :dataType -- param \n" +
-        "  and recv_condition = :where_recv_condition -- param \n"
+        "  and recv_condition = :where_recv_condition -- param \n" +
+        "  and DATE_FORMAT(data_kst, '%Y%m%d%H%i') = DATE_FORMAT(:data_kst, '%Y%m%d%H%i')\n"
     )
     @Transactional
     @Modifying
     // 결과 이력 update
     Integer updateReceiveData(
         @Param("new_recv_condition") String new_recv_condition,
-        @Param("sms_send") int sms_send,
+        @Param("new_codedtl") String new_codedtl,
         @Param("site") String site, 
         @Param("dataKindStr") String dataKindStr, 
         @Param("dataType") String dataType,
-        @Param("where_recv_condition") String where_recv_condition
+        @Param("where_recv_condition") String where_recv_condition,
+        @Param("data_kst") String data_kst
 
     );
 

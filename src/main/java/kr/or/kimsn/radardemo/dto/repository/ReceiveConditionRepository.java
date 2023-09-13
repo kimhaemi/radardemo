@@ -16,7 +16,9 @@ public interface ReceiveConditionRepository extends JpaRepository<ReceiveConditi
 
     List<ReceiveConditionDto> findBySiteAndDataType(String site, String data_type);
 
-    ReceiveConditionDto findByDataKindAndDataTypeAndSite(String data_kind, String Data_type, String Site);
+    List<ReceiveConditionDto> findByDataKindAndDataType(String data_kind, String data_type);
+
+    ReceiveConditionDto findByDataKindAndDataTypeAndSite(String data_kind, String data_type, String Site);
 
     @Query(
         nativeQuery = true,

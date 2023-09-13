@@ -60,9 +60,8 @@ public class SftpUtil {
 
         } catch (JSchException e) {
             result = false;
-            e.printStackTrace();
-            System.out.println("SFTP: server connect failed.");
-            // log.error("SFTP: server connect failed.");
+            // e.printStackTrace();
+            // System.out.println("SFTP: server connect failed.");
         }
 
         return result;

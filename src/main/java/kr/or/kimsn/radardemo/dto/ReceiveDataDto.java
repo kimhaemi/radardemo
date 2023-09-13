@@ -30,6 +30,5 @@ public class ReceiveDataDto {
     private String file_name;
     private Long file_size;
     private String codedtl;
-    private int sms_send;
 
 }

@@ -49,13 +49,18 @@ public class QueryService {
     }
 
     // 최종 처리 상태
+    public List<ReceiveConditionDto> getReceiveConditionList(String dataKindStr, String data_type){
+        return receiveConditionRepository.findByDataKindAndDataType(dataKindStr, data_type);
+    }
+
+    // 최종 처리 상태 - site 별
     public ReceiveConditionDto getReceiveCondition(String dataKindStr, String data_type, String site_cd){
         return receiveConditionRepository.findByDataKindAndDataTypeAndSite(dataKindStr, data_type, site_cd);
     }
 
     // 경고 기준 (횟수 - criterion) - List
     public List<ReceiveConditionCriteriaDto> getReceiveConditionCriteriaList(int gubun){
-        return receiveConditionCriteriaRepository.findByGubun(gubun);
+        return receiveConditionCriteriaRepository.findByGubunOrderBySort(gubun);
     }
 
     // 경고 기준 (횟수 - criterion) - 단건
@@ -73,7 +78,12 @@ public class QueryService {
         return receiveDataRepository.getReceiveDataList(site, dataKindStr, count);
     }
 
-    // data 처리 이력
+    // 문자 메시지 on/off
+    public SmsSendOnOffDto getSmsSendOnOffData(){
+        return smsSendOnOffRepository.findByCode("STOPSMS");
+    }
+
+    // data 처리 이력 - dtl
     public List<ReceiveDataDto> getReceiveDataCodedtlList(String site, String dataKindStr, int count, String codedtl){
         return receiveDataRepository.getReceiveDataCodedtlList(site, dataKindStr, count, codedtl);
     }
@@ -88,35 +98,33 @@ public class QueryService {
         return Long.parseLong(smsSendRepository.getAppContentNextval());
     }
 
-    //최종 결과 update
+    //최종 결과 update query
     public Integer updateReceiveCondition(String new_recv_condition, int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType){
         return receiveConditionRepository.updateReceiveCondition(new_recv_condition, sms_send, where_recv_condition, site, dataKindStr, dataType);
         //select * from receive_condition rc where recv_condition = 'TOTA' and site = 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
     }
 
     //이력 update
-    public Integer updateReceiveData(String new_recv_condition, int sms_send, String site, String dataKindStr, String dataType, String where_recv_condition){
-        return receiveDataRepository.updateReceiveData(new_recv_condition, sms_send, site, dataKindStr, dataType, where_recv_condition);
+    public Integer updateReceiveData(String new_recv_condition, String new_codedtl, String site, String dataKindStr, String dataType, String where_recv_condition, String data_kst){
+        return receiveDataRepository.updateReceiveData(new_recv_condition, new_codedtl, site, dataKindStr, dataType, where_recv_condition, data_kst);
     }
 
+    //최종 결과 update
     public void insReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
-            String apply_time, String last_check_time, int sms_send, int status, String codedtl) {
+            String apply_time, String last_check_time, int sms_send, int sms_send_activation, int status, String codedtl) {
         ReceiveConditionDto rcDto = new ReceiveConditionDto();
 
-        SmsSendOnOffDto onOffDto = smsSendOnOffRepository.findByCode("STOPSMS");
-        int onOffVal = onOffDto.getValue();
-
-        System.out.println("[==InsReceiveCondition==]");
-        System.out.println(" site : " + site_cd);
-        System.out.println(" data_kind : " + dataKindStr);
-        System.out.println(" data_type : " + dataType);
-        System.out.println(" recv_condition : " + recv_condition);
-        System.out.println(" apply_time : " + apply_time);
-        System.out.println(" last_check_time : " + last_check_time);
-        System.out.println(" sms_send : " + sms_send);
-        System.out.println(" sms_send_activation : " + onOffVal);
-        System.out.println(" status : " + status);
-        System.out.println(" codedtl : " + codedtl);
+        System.out.println("[==updateReceiveCondition==]");
+        // System.out.println(" site : " + site_cd);
+        // System.out.println(" data_kind : " + dataKindStr);
+        // System.out.println(" data_type : " + dataType);
+        // System.out.println(" recv_condition : " + recv_condition);
+        // System.out.println(" apply_time : " + apply_time);
+        // System.out.println(" last_check_time : " + last_check_time);
+        // System.out.println(" sms_send : " + sms_send);
+        // System.out.println(" sms_send_activation : " + sms_send_activation);
+        // System.out.println(" status : " + status);
+        // System.out.println(" codedtl : " + codedtl);
 
         rcDto.setSite(site_cd);
         rcDto.setDataKind(dataKindStr);
@@ -125,7 +133,7 @@ public class QueryService {
         rcDto.setApply_time(apply_time);
         rcDto.setLast_check_time(last_check_time);
         rcDto.setSms_send(sms_send);
-        rcDto.setSms_send_activation(onOffVal);
+        rcDto.setSms_send_activation(sms_send_activation);
         rcDto.setStatus(status);
         rcDto.setCodedtl(codedtl);
 
@@ -138,17 +146,17 @@ public class QueryService {
         ReceiveDataDto rdDto = new ReceiveDataDto();
 
         System.out.println("[==InsReceiveData==]");
-        System.out.println("data_kind : " + dataKindStr);
-        System.out.println("site : " + site_cd);
-        System.out.println("data_type : " + dataType);
-        System.out.println("data_time : " + data_time);
-        System.out.println("data_kst : " + data_kst);
-        System.out.println("recv_time : " + recv_time);
-        System.out.println("recv_condition : " + recv_condition);
-        System.out.println("recv_condition_check_time : " + recv_condition_check_time);
-        System.out.println("file_name : " + file_name);
-        System.out.println("file_size : " + file_size);
-        System.out.println("codedtl : " + codedtl);
+        // System.out.println("data_kind : " + dataKindStr);
+        // System.out.println("site : " + site_cd);
+        // System.out.println("data_type : " + dataType);
+        // System.out.println("data_time : " + data_time);
+        // System.out.println("data_kst : " + data_kst);
+        // System.out.println("recv_time : " + recv_time);
+        // System.out.println("recv_condition : " + recv_condition);
+        // System.out.println("recv_condition_check_time : " + recv_condition_check_time);
+        // System.out.println("file_name : " + file_name);
+        // System.out.println("file_size : " + file_size);
+        // System.out.println("codedtl : " + codedtl);
 
         rdDto.setData_kind(dataKindStr);
         rdDto.setSite(site_cd);
@@ -158,8 +166,8 @@ public class QueryService {
         rdDto.setRecv_time(null);
         rdDto.setRecv_condition(recv_condition);
         rdDto.setRecv_condition_check_time(recv_condition_check_time);
-        rdDto.setFile_name(null);
-        rdDto.setFile_size(0L);
+        rdDto.setFile_name(file_size == 0 ? "" : file_name);
+        rdDto.setFile_size(file_size);
         rdDto.setCodedtl(codedtl);
 
         receiveDataRepository.save(rdDto);

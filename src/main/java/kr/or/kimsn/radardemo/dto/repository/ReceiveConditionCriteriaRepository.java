@@ -14,7 +14,7 @@ public interface ReceiveConditionCriteriaRepository extends JpaRepository<Receiv
     List<ReceiveConditionCriteriaDto> findByOrderByGubunAscSortAsc();
 
     //경고기준설정 조회 - site 구분
-    List<ReceiveConditionCriteriaDto> findByGubun(int gubun);
+    List<ReceiveConditionCriteriaDto> findByGubunOrderBySort(int gubun);
 
     @Query(
         nativeQuery = true,
