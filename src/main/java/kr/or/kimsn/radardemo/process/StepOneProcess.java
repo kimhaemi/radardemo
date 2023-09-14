@@ -53,8 +53,6 @@ public class StepOneProcess extends Thread {
         String mode = DataCommon.getInfoConf("siteInfo", "mode");
         // System.out.println("[mode] : " + mode);
 
-        if (mode.equals("test"))
-            srCnt = 1;
         if (!mode.equals("test")) {
             srDto = queryService.getStation(gubun);
             srCnt = srDto.size();
@@ -63,21 +61,18 @@ public class StepOneProcess extends Thread {
         System.out.println("[접속 레이더 갯수] : " + srCnt);
 
         for (int a = 0; a < srCnt; a++) {
-            String site_cd = "";
-            if (srCnt == 1) site_cd = "TEST";
-            if (srCnt > 1) site_cd = srDto.get(a).getSiteCd();
+            String site_cd = srDto.get(a).getSiteCd();
+            String siteStr = srDto.get(a).getName_kr();
 
             int port = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "PORT"));
             String site_ip = DataCommon.getInfoConf("ipInfo", site_cd + "_IP");
             String site_username = DataCommon.getInfoConf("ipInfo", site_cd + "_ID");
             String site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD");
-            if(srCnt > 1 && gubun == 2){
-                site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD")+"#";
-            }
+            // if(gubun == 2) site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD")+"#";
 
             try {
 
-                System.out.println("[============ " + site_cd + " site 접속 정보 ==============]");
+                System.out.println("[============ " + siteStr + " site 접속 정보 ==============]");
                 System.out.println("[" + site_cd + "_port] : " + port);
                 System.out.println("[" + site_cd + "_ip] : " + site_ip);
                 System.out.println("[" + site_cd + "_username] : " + site_username);
@@ -104,19 +99,42 @@ public class StepOneProcess extends Thread {
                     String filePattern = rsDto.getFilename_pattern();
                     String timeZone = rsDto.getTime_zone();
 
-                    String dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
+                    // String dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
+                    
+                    //특정 이전시간 구하기 (예. 4분 30초 전 - 300초)
+                    int second = 0;
+                    String previousTime = ""; 
+                    
+                    //파일 날짜
+                    if(gubun == 1 || gubun == 3){ //대형, 공항 4분 30초 전
+                        second = 60*4+30;
+                        previousTime = queryService.getPreviousTime(second);
+                        System.out.println("감시 해야할 시간 이전: " + previousTime);
 
-                    if(gubun != 2){
-                        if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) < 5)
-                            dateTime = dateTime.substring(0, dateTime.length() - 1) + "0";
-                        if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) > 5)
-                            dateTime = dateTime.substring(0, dateTime.length() - 1) + "5";
+                        if(Integer.parseInt(previousTime.substring(previousTime.length()-1, previousTime.length())) <= 5)
+                            previousTime = previousTime.substring(0, previousTime.length()-1) + "0";
+                        if(Integer.parseInt(previousTime.substring(previousTime.length()-1, previousTime.length())) > 5)
+                            previousTime = previousTime.substring(0, previousTime.length()-1) + "5"; 
+                        System.out.println("감시 해야할 시간 이후: " + previousTime);
                     }
+
+                    if(gubun == 2){ //소형 2분 전
+                        second = 60*2;
+                        previousTime = queryService.getPreviousTime(second);
+                    }
+
+
+                    // if(gubun != 2){
+                        // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) < 5)
+                        //     dateTime = dateTime.substring(0, dateTime.length() - 1) + "0";
+                        // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) > 5)
+                        //     dateTime = dateTime.substring(0, dateTime.length() - 1) + "5";
+                    // }
                     // System.out.println("[date Time] : " + dateTime);
                     // System.out.println("[site_cd] : " + site_cd);
 
                     // 파일 패턴으로 파일명 찾기
-                    file_name = filePattern.replace("%site%", site_cd).replace("%yyyyMMddHHmm%", dateTime);
+                    file_name = filePattern.replace("%site%", site_cd).replace("%yyyyMMddHHmm%", previousTime);
                     System.out.println("[파일 패턴] : " + filePattern);
                     System.out.println("[파일 명] : " + file_name);
 

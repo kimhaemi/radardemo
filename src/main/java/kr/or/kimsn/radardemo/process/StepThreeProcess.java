@@ -60,8 +60,6 @@ public class StepThreeProcess {
             String mode = DataCommon.getInfoConf("siteInfo", "mode");
             // System.out.println("[mode] : " + mode);
 
-            if (mode.equals("test"))
-                srCnt = 1;
             if (!mode.equals("test")) {
                 srDto = queryService.getStation(gubun);
                 srCnt = srDto.size();
@@ -70,16 +68,8 @@ public class StepThreeProcess {
             System.out.println("[레이더 갯수] : " + srCnt);
 
             for(int a=0; a< srCnt; a++){
-                String site_cd = "";
-                String siteStr = "";
-                if(srCnt == 1) {
-                    site_cd = "TEST";
-                    siteStr = "TEST";
-                }
-                if(srCnt > 1) { 
-                    site_cd = srDto.get(a).getSiteCd();
-                    siteStr = srDto.get(a).getName_kr(); 
-                }
+                String site_cd = srDto.get(a).getSiteCd();
+                String siteStr = srDto.get(a).getName_kr();
 
                 System.out.println("[============ " + siteStr + " 정보 ==============]");
 

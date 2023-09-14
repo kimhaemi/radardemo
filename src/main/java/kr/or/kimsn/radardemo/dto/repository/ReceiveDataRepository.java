@@ -13,6 +13,15 @@ import kr.or.kimsn.radardemo.dto.pkColumn.ReceiveDataPk;
 
 public interface ReceiveDataRepository extends JpaRepository<ReceiveDataDto, ReceiveDataPk> {
 
+    //app contents seq
+	@Query(
+        nativeQuery = true,
+        value= "select DATE_FORMAT(now()-interval :second second, '%Y%m%d%H%i') as previousTime from dual"
+		//select DATE_FORMAT(now()-interval 60*4+30 second, '%Y%m%d%H%i') as previousTime from dual;
+	)
+    //특정 시간 구하기(초단위)
+	String getPreviousTime(@Param("second") int second);
+
     @Query(
         nativeQuery = true,
         value=

@@ -49,8 +49,6 @@ public class StepTwoProcess {
         String mode = DataCommon.getInfoConf("siteInfo", "mode");
         // System.out.println("[mode] : " + mode);
 
-        if (mode.equals("test"))
-            srCnt = 1;
         if (!mode.equals("test")) {
             srDto = queryService.getStation(gubun);
             srCnt = srDto.size();
@@ -64,9 +62,8 @@ public class StepTwoProcess {
         List<ReceiveConditionCriteriaDto> rccDto = queryService.getReceiveConditionCriteriaList(gubun);
 
         for(int a=0; a< srCnt; a++){
-            String site_cd = "";
-            if(srCnt == 1) site_cd = "TEST";
-            if(srCnt > 1) site_cd = srDto.get(a).getSiteCd();
+            String site_cd = srDto.get(a).getSiteCd();
+
             //전 site 이력 조회
             List<ReceiveDataDto> rdDtoSingle = queryService.getReceiveDataList(site_cd, dataKindStr, 1);
             for(ReceiveDataDto rd : rdDtoSingle){
@@ -81,10 +78,10 @@ public class StepTwoProcess {
             String new_recv_condition = ""; //정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
             String recv_con_dtl = ""; //정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
 
-            String site_cd = "";
-            if(srCnt == 1) site_cd = "TEST";
-            if(srCnt > 1) site_cd = srDto.get(a).getSiteCd();
-            System.out.println(">>>>>>>> [레이더] : " + site_cd);
+            String site_cd = srDto.get(a).getSiteCd();
+            String siteStr = srDto.get(a).getName_kr();
+
+            System.out.println("[============ " + siteStr + " 정보 ==============]");
 
             if(all_site_network_no == srCnt){
                 System.out.println("============================== 전 사이트 네트워크 장애 ================================");
@@ -262,12 +259,9 @@ public class StepTwoProcess {
                 }
 
                 // 최종상태 update
-                System.out.println(site_cd + "별 최종상태 update");
+                System.out.println(siteStr + " 별 최종상태 update");
                 queryService.insReceiveCondition(site_cd, dataKindStr, dataType, new_recv_condition, rcDto.getApply_time(), currentTime, sms_send, rcDto.getSms_send_activation(), 1, recv_con_dtl);
                 // Integer total = queryService.updateReceiveCondition(new_recv_condition, 0, where_recv_condition, site_cd, dataKindStr, dataType);
-                
-                
-                System.out.println("//////////////////////////////////////////////////////////////////////////");
             } else {
                 System.out.println("[상태 안바뀜]");
             }

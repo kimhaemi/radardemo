@@ -163,7 +163,7 @@ public class QueryService {
         rdDto.setData_type(dataType);
         rdDto.setData_time(data_time);
         rdDto.setData_kst(data_kst);
-        rdDto.setRecv_time(null);
+        rdDto.setRecv_time(data_kst);
         rdDto.setRecv_condition(recv_condition);
         rdDto.setRecv_condition_check_time(recv_condition_check_time);
         rdDto.setFile_name(file_size == 0 ? "" : file_name);
@@ -182,5 +182,11 @@ public class QueryService {
     //문자 전송(app_send_contents) insert
     public void intGaonAppSendContentsSave(Long appSeq, String smsPettern){
         smsSendRepository.gaonAppSendContentsSave(appSeq, smsPettern);
+    }
+
+    //특정 시간 구하기
+    public String getPreviousTime(int second){
+        return receiveDataRepository.getPreviousTime(second);
+        
     }
 }
