@@ -7,7 +7,13 @@ public class DataCommon {
 
     // private final static String siteInfo = "./conf/siteInfoSetting.conf";
     // private final static String ipInfo = "./../ipConf/siteIPInfoSetting.conf";
-    private final static String siteInfo = "/home/watcher/deamon/RDR/conf/siteInfoSetting.conf";
+
+    // private final static String siteInfo =
+    // "/home/watcher/deamon/RDR/conf/siteInfoSetting.conf";
+    private final static String siteInfo = "/home/watcher/deamon/TDWR/conf/siteInfoSetting.conf";
+    // private final static String siteInfo =
+    // "/home/watcher/deamon/SDR/conf/siteInfoSetting.conf";
+
     private final static String ipInfo = "/home/watcher/ipConf/siteIPInfoSetting.conf";
 
     public static String getInfoConf(String infoStr, String tp) {

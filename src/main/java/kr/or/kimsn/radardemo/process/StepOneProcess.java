@@ -40,14 +40,20 @@ public class StepOneProcess extends Thread {
         int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "gubun"));
         // System.out.println("[데몬 구분 int] : " + gubun);
 
-        if (gubun == 1) gubunStr = "대형";
-        if (gubun == 2) gubunStr = "소형";
-        if (gubun == 3) gubunStr = "공항";
+        if (gubun == 1)
+            gubunStr = "대형";
+        if (gubun == 2)
+            gubunStr = "소형";
+        if (gubun == 3)
+            gubunStr = "공항";
         System.out.println("[데몬 구분] : " + gubunStr);
 
-        if (gubun == 1) dataKindStr = "RDR";
-        if (gubun == 2) dataKindStr = "SDR";
-        if (gubun == 3) dataKindStr = "TDWR";
+        if (gubun == 1)
+            dataKindStr = "RDR";
+        if (gubun == 2)
+            dataKindStr = "SDR";
+        if (gubun == 3)
+            dataKindStr = "TDWR";
         System.out.println("[데이터 종류] : " + dataKindStr);
 
         String mode = DataCommon.getInfoConf("siteInfo", "mode");
@@ -68,7 +74,8 @@ public class StepOneProcess extends Thread {
             String site_ip = DataCommon.getInfoConf("ipInfo", site_cd + "_IP");
             String site_username = DataCommon.getInfoConf("ipInfo", site_cd + "_ID");
             String site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD");
-            // if(gubun == 2) site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD")+"#";
+            if (gubun == 2)
+                site_pwd = DataCommon.getInfoConf("ipInfo", site_cd + "_PASSWORD") + "#";
 
             try {
 
@@ -87,48 +94,53 @@ public class StepOneProcess extends Thread {
                 // 접속 O
                 if (sftpConnect) {
                     String file_path = DataCommon.getInfoConf("siteInfo", "rdr_path");
-                    if(gubun == 2){ //소형폴더는 조합이 다르네..
-                        String yearmonth = FormatDateUtil.formatDate("yyyyMM", new Date()); //연월
-                        String day = FormatDateUtil.formatDate("dd", new Date()); //일
+                    if (gubun == 2) { // 소형폴더는 조합이 다르네..
+                        String yearmonth = FormatDateUtil.formatDate("yyyyMM", new Date()); // 연월
+                        String day = FormatDateUtil.formatDate("dd", new Date()); // 일
                         file_path = file_path.replace("%yyyyMM%", yearmonth).replace("%dd%", day);
                     }
                     System.out.println("[file_path] : " + file_path);
 
                     ReceiveSettingDto rsDto = queryService.getrRceiveSetting(dataKindStr);
-                    
+
+                    System.out.println("[rsDto] :::: " + rsDto);
+
                     String filePattern = rsDto.getFilename_pattern();
                     String timeZone = rsDto.getTime_zone();
 
                     // String dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
-                    
-                    //특정 이전시간 구하기 (예. 4분 30초 전 - 300초)
+
+                    // 특정 이전시간 구하기 (예. 4분 30초 전 - 300초)
                     int second = 0;
-                    String previousTime = ""; 
-                    
-                    //파일 날짜
-                    if(gubun == 1 || gubun == 3){ //대형, 공항 4분 30초 전
-                        second = 60*4+30;
+                    String previousTime = "";
+
+                    // 파일 날짜
+                    if (gubun == 1 || gubun == 3) { // 대형, 공항 4분 30초 전
+                        second = 60 * 4 + 30;
                         previousTime = queryService.getPreviousTime(second);
                         System.out.println("감시 해야할 시간 이전: " + previousTime);
 
-                        if(Integer.parseInt(previousTime.substring(previousTime.length()-1, previousTime.length())) <= 5)
-                            previousTime = previousTime.substring(0, previousTime.length()-1) + "0";
-                        if(Integer.parseInt(previousTime.substring(previousTime.length()-1, previousTime.length())) > 5)
-                            previousTime = previousTime.substring(0, previousTime.length()-1) + "5"; 
+                        if (Integer.parseInt(
+                                previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
+                            previousTime = previousTime.substring(0, previousTime.length() - 1) + "0";
+                        if (Integer
+                                .parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
+                            previousTime = previousTime.substring(0, previousTime.length() - 1) + "5";
                         System.out.println("감시 해야할 시간 이후: " + previousTime);
                     }
 
-                    if(gubun == 2){ //소형 2분 전
-                        second = 60*2;
+                    if (gubun == 2) { // 소형 2분 전
+                        second = 60 * 2;
                         previousTime = queryService.getPreviousTime(second);
                     }
 
-
                     // if(gubun != 2){
-                        // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) < 5)
-                        //     dateTime = dateTime.substring(0, dateTime.length() - 1) + "0";
-                        // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1, dateTime.length())) > 5)
-                        //     dateTime = dateTime.substring(0, dateTime.length() - 1) + "5";
+                    // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1,
+                    // dateTime.length())) < 5)
+                    // dateTime = dateTime.substring(0, dateTime.length() - 1) + "0";
+                    // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1,
+                    // dateTime.length())) > 5)
+                    // dateTime = dateTime.substring(0, dateTime.length() - 1) + "5";
                     // }
                     // System.out.println("[date Time] : " + dateTime);
                     // System.out.println("[site_cd] : " + site_cd);
@@ -141,14 +153,16 @@ public class StepOneProcess extends Thread {
                     // 자료감시 설정 on
                     if (rsDto.getPermittedWatch() == 1) {
                         // System.out.println("[자료감시 설정 on]");
-                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern, timeZone);
+                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern,
+                                timeZone);
                         System.out.println("[파일존재유무] : " + file_exists);
 
                         // 파일 O (ORDI - file_ok)
                         if (file_exists) {
-                            // System.out.println("[파일 O]");
+                            System.out.println("[파일 O]");
                             Long file_size_min = Long.parseLong(DataCommon.getInfoConf("siteInfo", "file_size_min"));
-                            Long file_size_max = Long.parseLong(DataCommon.getInfoConf("siteInfo", "file_size_max"));
+                            Long file_size_max = 0L; // 23.09.15 wl
+                            // Long.parseLong(DataCommon.getInfoConf("siteInfo", "file_size_max"));
 
                             file_size = sftp.fileSize(file_path, file_name, file_size_min, file_size_max);
                             System.out.println("[file size] : " + file_size);
@@ -161,15 +175,17 @@ public class StepOneProcess extends Thread {
                                 codedtl = "ok";
                                 // recv_condition = "ORDI";
                                 recv_condition_data = "RECV";
-                                // errStr = "[자료 수신 (ORDI - filesize_ok) query insert table1 - receive_condition]";
+                                // errStr = "[자료 수신 (ORDI - filesize_ok) query insert table1 -
+                                // receive_condition]";
                                 errStrData = "[자료 수신 (ORDI - filesize_ok) query insert receive_data]";
-                                
+
                             } else {
                                 // 파일 품질 이상 (WARN - filesize_no)
                                 // recv_condition = "WARN";
                                 codedtl = "filesize_no";
                                 recv_condition_data = "MISS";
-                                // errStr = "[파일 품질 이상 (WARN - filesize_no) query insert table1 - receive_condition]";
+                                // errStr = "[파일 품질 이상 (WARN - filesize_no) query insert table1 -
+                                // receive_condition]";
                                 errStrData = "[파일 품질 이상 (WARN - filesize_no) query insert - receive_data]";
                             }
 
@@ -204,8 +220,10 @@ public class StepOneProcess extends Thread {
                 // System.out.println(errStr);
                 System.out.println(errStrData);
 
-                // queryService.insReceiveCondition(site_cd, dataKindStr, dataType, recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time, data_kst, data_kst, recv_condition_data, recv_condition_check_time, file_name, file_size, codedtl);
+                // queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
+                // recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
+                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time, data_kst, data_kst,
+                        recv_condition_data, recv_condition_check_time, file_name, file_size, codedtl);
             } catch (Exception e) {
                 // log.debug("error : " + e);
                 System.out.println("StepOneProcess run Error - " + e);

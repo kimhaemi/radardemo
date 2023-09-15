@@ -35,9 +35,10 @@ public class Scheduler {
 
     // * * * * * *
     // 초(0-59) 분(0-59) 시간(0-23) 일(1-31) 월(1-12) 요일(0-7)
-    @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * ?") // 6분 00초
     // //대형, 공항
-    // @Scheduled(cron = "30 0-59 * * * ?") // 매분 30초 //소형
+    @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * ?") // 6분 00초
+    // 소형
+    // @Scheduled(cron = "30 0-59 * * * ?") // 매분 30초
     // @Scheduled(fixedDelay = 30000) //30초마다
     @Async
     public void cronJobSch() throws InterruptedException {
