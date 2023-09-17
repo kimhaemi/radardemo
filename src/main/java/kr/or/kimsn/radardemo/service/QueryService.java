@@ -99,8 +99,8 @@ public class QueryService {
     }
 
     //최종 결과 update query
-    public Integer updateReceiveCondition(String new_recv_condition, int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType){
-        return receiveConditionRepository.updateReceiveCondition(new_recv_condition, sms_send, where_recv_condition, site, dataKindStr, dataType);
+    public Integer updateReceiveCondition(String apply_time, String new_recv_condition, String new_codedtl, int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType){
+        return receiveConditionRepository.updateReceiveCondition(apply_time, new_recv_condition, new_codedtl, sms_send, where_recv_condition, site, dataKindStr, dataType);
         //select * from receive_condition rc where recv_condition = 'TOTA' and site = 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
     }
 
@@ -137,7 +137,8 @@ public class QueryService {
         rcDto.setStatus(status);
         rcDto.setCodedtl(codedtl);
 
-        receiveConditionRepository.save(rcDto);
+        // receiveConditionRepositor/y.save(rcDto);
+
     }
 
     public void insReceiveData(String dataKindStr, String site_cd, String dataType, String data_time, String data_kst,

@@ -85,6 +85,7 @@ public class StepThreeProcess {
                     String codedtl = rcDto.getCodedtl();
                     String smsCodedtl = rcDto.getCodedtl();
                     int sms_send = rcDto.getSms_send();
+                    String apply_time = rcDto.getApply_time();
 
                     // System.out.println("[gubun] : " + gubun);
                     System.out.println("[code] : " + code);
@@ -181,7 +182,7 @@ public class StepThreeProcess {
 
                             System.out.println("[문자 전송 여부 update]");
                             sms_send = 1;
-                            queryService.updateReceiveCondition(code, sms_send, code, site_cd, dataKindStr, "NQC");
+                            queryService.updateReceiveCondition(apply_time, code, codedtl, sms_send, code, site_cd, dataKindStr, "NQC");
                             // queryService.updateReceiveData(code, 0, site_cd, dataKindStr, "NQC", code);
                         } else {
                             System.out.println("[이미 문자 전송했으므로 안해도 됨]");

@@ -120,11 +120,9 @@ public class StepOneProcess extends Thread {
                         previousTime = queryService.getPreviousTime(second);
                         System.out.println("감시 해야할 시간 이전: " + previousTime);
 
-                        if (Integer.parseInt(
-                                previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
+                        if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
                             previousTime = previousTime.substring(0, previousTime.length() - 1) + "0";
-                        if (Integer
-                                .parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
+                        if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
                             previousTime = previousTime.substring(0, previousTime.length() - 1) + "5";
                         System.out.println("감시 해야할 시간 이후: " + previousTime);
                     }
@@ -134,17 +132,6 @@ public class StepOneProcess extends Thread {
                         previousTime = queryService.getPreviousTime(second);
                     }
 
-                    // if(gubun != 2){
-                    // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1,
-                    // dateTime.length())) < 5)
-                    // dateTime = dateTime.substring(0, dateTime.length() - 1) + "0";
-                    // if (Integer.parseInt(dateTime.substring(dateTime.length() - 1,
-                    // dateTime.length())) > 5)
-                    // dateTime = dateTime.substring(0, dateTime.length() - 1) + "5";
-                    // }
-                    // System.out.println("[date Time] : " + dateTime);
-                    // System.out.println("[site_cd] : " + site_cd);
-
                     // 파일 패턴으로 파일명 찾기
                     file_name = filePattern.replace("%site%", site_cd).replace("%yyyyMMddHHmm%", previousTime);
                     System.out.println("[파일 패턴] : " + filePattern);
@@ -153,8 +140,7 @@ public class StepOneProcess extends Thread {
                     // 자료감시 설정 on
                     if (rsDto.getPermittedWatch() == 1) {
                         // System.out.println("[자료감시 설정 on]");
-                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern,
-                                timeZone);
+                        boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern, timeZone);
                         System.out.println("[파일존재유무] : " + file_exists);
 
                         // 파일 O (ORDI - file_ok)
@@ -217,13 +203,9 @@ public class StepOneProcess extends Thread {
                 System.out.println("[파일 size] : " + file_size);
                 System.out.println("[파일 recv] : " + recv_condition_data);
                 System.out.println("[파일 recvDtl] : " + codedtl);
-                // System.out.println(errStr);
                 System.out.println(errStrData);
 
-                // queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
-                // recv_condition, apply_time, last_check_time, sms_send, status, codedtl);
-                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time, data_kst, data_kst,
-                        recv_condition_data, recv_condition_check_time, file_name, file_size, codedtl);
+                queryService.insReceiveData(dataKindStr, site_cd, dataType, data_time, data_kst, data_kst,recv_condition_data, recv_condition_check_time, file_name, file_size, codedtl);
             } catch (Exception e) {
                 // log.debug("error : " + e);
                 System.out.println("StepOneProcess run Error - " + e);

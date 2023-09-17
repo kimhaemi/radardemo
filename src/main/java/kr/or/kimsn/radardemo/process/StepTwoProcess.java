@@ -42,7 +42,7 @@ public class StepTwoProcess {
             gubunStr = "소형";
         if (gubun == 3)
             gubunStr = "공항";
-        System.out.println("[데몬 구분] : " + gubunStr);
+        // System.out.println("[데몬 구분] : " + gubunStr);
 
         if (gubun == 1)
             dataKindStr = "RDR";
@@ -50,7 +50,7 @@ public class StepTwoProcess {
             dataKindStr = "SDR";
         if (gubun == 3)
             dataKindStr = "TDWR";
-        System.out.println("[데이터 종류] : " + dataKindStr);
+        // System.out.println("[데이터 종류] : " + dataKindStr);
 
         String mode = DataCommon.getInfoConf("siteInfo", "mode");
         // System.out.println("[mode] : " + mode);
@@ -60,12 +60,13 @@ public class StepTwoProcess {
             srCnt = srDto.size();
         }
 
-        System.out.println("[접속 레이더 갯수] : " + srCnt);
+        // System.out.println("[접속 레이더 갯수] : " + srCnt);
 
         int all_site_network_no = 0; // 전 사이트 네트워크 장애 여부
 
         // 경고 기준 (횟수 - criterion)
         List<ReceiveConditionCriteriaDto> rccDto = queryService.getReceiveConditionCriteriaList(gubun);
+        System.out.println("경고 기준 횟수 : " + rccDto);
 
         for (int a = 0; a < srCnt; a++) {
             String site_cd = srDto.get(a).getSiteCd();
@@ -81,9 +82,11 @@ public class StepTwoProcess {
 
         for (int a = 0; a < srCnt; a++) {
 
-            String new_recv_condition = "ORDI"; // 정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크
-                                                // 장애(network_no)
+            String new_recv_condition = "ORDI"; // 정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
             String recv_con_dtl = "ok"; // 정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
+
+            String old_recv_condition = "";
+            String apply_time = "";
 
             String site_cd = srDto.get(a).getSiteCd();
             String siteStr = srDto.get(a).getName_kr();
@@ -102,6 +105,8 @@ public class StepTwoProcess {
             // 최종상태조회
             ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr, "NQC", site_cd);
             System.out.println("rcDto ::::::::: " + rcDto);
+
+            old_recv_condition = rcDto.getRecv_condition();
 
             // 최종 상태가 TOTA 이면 네트워크 복구 이력으로 update
             if (rcDto.getRecv_condition().equals("TOTA")) {
@@ -272,14 +277,18 @@ public class StepTwoProcess {
             int sms_send = 0;
             if (rcDto.getRecv_condition().equals(new_recv_condition)) {
                 sms_send = rcDto.getSms_send();
+                apply_time = rcDto.getApply_time();
             } else {
                 sms_send = 0;
+                apply_time = FormatDateUtil.formatDate("yyyy-MM-dd HH:mm:ss", new Date()); // 일
             }
 
             // 최종상태 update
             System.out.println(siteStr + " 별 최종상태 update");
-            queryService.insReceiveCondition(site_cd, dataKindStr, dataType, new_recv_condition, currentTime,
-                    currentTime, sms_send, rcDto.getSms_send_activation(), 1, recv_con_dtl);
+            System.out.println("new_recv_condition ::: " + new_recv_condition);
+            System.out.println("recv_con_dtl ::: " + recv_con_dtl);
+            queryService.updateReceiveCondition(apply_time, new_recv_condition, recv_con_dtl, sms_send, old_recv_condition, site_cd, dataKindStr, "NQC");
+            // queryService.insReceiveCondition(site_cd, dataKindStr, dataType, new_recv_condition, currentTime, currentTime, sms_send, rcDto.getSms_send_activation(), 1, recv_con_dtl);
             // queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
             // new_recv_condition, rcDto.getApply_time(), currentTime, sms_send,
             // rcDto.getSms_send_activation(), 1, recv_con_dtl);

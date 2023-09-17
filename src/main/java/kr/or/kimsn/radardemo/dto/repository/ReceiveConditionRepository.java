@@ -24,8 +24,10 @@ public interface ReceiveConditionRepository extends JpaRepository<ReceiveConditi
         nativeQuery = true,
         value=
         "update watchdog.receive_condition set\n"+
+        "  apply_time = :apply_time, \n"+
         "  last_check_time = now(), \n"+
         "  recv_condition = :new_recv_condition, \n" +
+        "  codedtl = :new_codedtl, \n" +
         "  sms_send = :sms_send \n" +
 	    "where 1=1 \n"+
         "  and recv_condition = :where_recv_condition \n"+
@@ -37,7 +39,9 @@ public interface ReceiveConditionRepository extends JpaRepository<ReceiveConditi
     @Modifying
     // 최종결과 update
     Integer updateReceiveCondition(
+        @Param("apply_time") String apply_time,
         @Param("new_recv_condition") String new_recv_condition,
+        @Param("new_codedtl") String new_codedtl,
         @Param("sms_send") int sms_send, 
         @Param("where_recv_condition") String where_recv_condition, 
         @Param("site") String site, 
