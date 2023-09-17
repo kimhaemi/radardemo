@@ -66,7 +66,7 @@ public class StepTwoProcess {
 
         // 경고 기준 (횟수 - criterion)
         List<ReceiveConditionCriteriaDto> rccDto = queryService.getReceiveConditionCriteriaList(gubun);
-        System.out.println("경고 기준 횟수 : " + rccDto);
+        // System.out.println("경고 기준 횟수 : " + rccDto);
 
         for (int a = 0; a < srCnt; a++) {
             String site_cd = srDto.get(a).getSiteCd();
@@ -104,7 +104,7 @@ public class StepTwoProcess {
             System.out.println("data_type : " + "NQC");
             // 최종상태조회
             ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr, "NQC", site_cd);
-            System.out.println("rcDto ::::::::: " + rcDto);
+            // System.out.println("rcDto ::::::::: " + rcDto);
 
             old_recv_condition = rcDto.getRecv_condition();
 
@@ -123,8 +123,7 @@ public class StepTwoProcess {
 
                 // 파일크기가 정상 수신되었을때
                 if (rcDto.getCodedtl().equals("filesize_no")) {
-                    queryService.updateReceiveData("RETR", "filesize_ok", site_cd, dataKindStr, "NQC", "RECV",
-                            currentTime);
+                    queryService.updateReceiveData("RETR", "filesize_ok", site_cd, dataKindStr, "NQC", "RECV", currentTime);
                 }
             }
 
@@ -145,8 +144,7 @@ public class StepTwoProcess {
                 // 장애 > 복구 - 최종 상태가 '주의 또는 경고' 상태에서 자료가 연속으로 N회 이상 자료가 수신되었을 때
                 if (rcDto.getRecv_condition().equals("WARN")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
-                            rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
 
                     // 복구(file_ok)
                     if (rcc.getCodedtl().equals("file_ok")) {
@@ -181,8 +179,7 @@ public class StepTwoProcess {
                 // 네트워크 복구(network_ok)
                 if (rcc.getCode().equals("TORE")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
-                            rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
                     int cnt = 0;
                     for (ReceiveDataDto rd : rdDto) {
                         if (rd.getRecv_condition().equals(rcc.getCode())) {
@@ -200,8 +197,7 @@ public class StepTwoProcess {
                 // 네트워크 장애(network_no)
                 if (rcc.getCode().equals("TOTA")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
-                            rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
                     int cnt = 0;
                     for (ReceiveDataDto rd : rdDto) {
                         if (rd.getRecv_condition().equals(rcc.getCodedtl())) {
@@ -218,8 +214,7 @@ public class StepTwoProcess {
                 // 장애
                 if (rcc.getCode().equals("WARN")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
-                            rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
 
                     // 장애(file_no)
                     if (rcc.getCodedtl().equals("file_no")) {
@@ -271,8 +266,7 @@ public class StepTwoProcess {
 
             // if (!new_recv_condition.equals("")) {
             // 최종상태조회
-            // ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr,
-            // "NQC", site_cd);
+            // ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr, "NQC", site_cd);
             // System.out.println("[최종상태 조회] : " + rcDto);
             int sms_send = 0;
             if (rcDto.getRecv_condition().equals(new_recv_condition)) {

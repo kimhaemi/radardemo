@@ -85,61 +85,62 @@ public class StepOneProcess extends Thread {
                 System.out.println("[" + site_cd + "_username] : " + site_username);
                 System.out.println("[" + site_cd + "_pwd] : " + site_pwd);
 
-                // site 접속
-                SftpUtil sftp = new SftpUtil();
-                boolean sftpConnect = sftp.open(site_ip, site_username, site_pwd, port);
+                ReceiveSettingDto rsDto = queryService.getrRceiveSetting(dataKindStr);
 
-                System.out.println("[접속 유무] : " + sftpConnect);
+                // 자료감시 설정 on
+                if (rsDto.getPermittedWatch() == 1) {
+                    // System.out.println("[자료감시 설정 on]");
 
-                // 접속 O
-                if (sftpConnect) {
-                    String file_path = DataCommon.getInfoConf("siteInfo", "rdr_path");
-                    if (gubun == 2) { // 소형폴더는 조합이 다르네..
-                        String yearmonth = FormatDateUtil.formatDate("yyyyMM", new Date()); // 연월
-                        String day = FormatDateUtil.formatDate("dd", new Date()); // 일
-                        file_path = file_path.replace("%yyyyMM%", yearmonth).replace("%dd%", day);
-                    }
-                    System.out.println("[file_path] : " + file_path);
+                    // site 접속
+                    SftpUtil sftp = new SftpUtil();
+                    boolean sftpConnect = sftp.open(site_ip, site_username, site_pwd, port);
 
-                    ReceiveSettingDto rsDto = queryService.getrRceiveSetting(dataKindStr);
+                    System.out.println("[접속 유무] : " + sftpConnect);
 
-                    System.out.println("[rsDto] :::: " + rsDto);
+                    // 접속 O
+                    if (sftpConnect) {
+                        String file_path = DataCommon.getInfoConf("siteInfo", "rdr_path");
+                        if (gubun == 2) { // 소형폴더는 조합이 다르네..
+                            String yearmonth = FormatDateUtil.formatDate("yyyyMM", new Date()); // 연월
+                            String day = FormatDateUtil.formatDate("dd", new Date()); // 일
+                            file_path = file_path.replace("%yyyyMM%", yearmonth).replace("%dd%", day);
+                        }
+                        System.out.println("[file_path] : " + file_path);
 
-                    String filePattern = rsDto.getFilename_pattern();
-                    String timeZone = rsDto.getTime_zone();
+                        System.out.println("[rsDto] :::: " + rsDto);
 
-                    // String dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
+                        String filePattern = rsDto.getFilename_pattern();
+                        String timeZone = rsDto.getTime_zone();
 
-                    // 특정 이전시간 구하기 (예. 4분 30초 전 - 300초)
-                    int second = 0;
-                    String previousTime = "";
+                        // String dateTime = FormatDateUtil.formatDate("yyyyMMddHHmm", new Date());
 
-                    // 파일 날짜
-                    if (gubun == 1 || gubun == 3) { // 대형, 공항 4분 30초 전
-                        second = 60 * 4 + 30;
-                        previousTime = queryService.getPreviousTime(second);
-                        System.out.println("감시 해야할 시간 이전: " + previousTime);
+                        // 특정 이전시간 구하기 (예. 4분 30초 전 - 300초)
+                        int second = 0;
+                        String previousTime = "";
 
-                        if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
-                            previousTime = previousTime.substring(0, previousTime.length() - 1) + "0";
-                        if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
-                            previousTime = previousTime.substring(0, previousTime.length() - 1) + "5";
-                        System.out.println("감시 해야할 시간 이후: " + previousTime);
-                    }
+                        // 파일 날짜
+                        if (gubun == 1 || gubun == 3) { // 대형, 공항 4분 30초 전
+                            second = 60 * 4 + 30;
+                            previousTime = queryService.getPreviousTime(second);
+                            System.out.println("감시 해야할 시간 이전: " + previousTime);
 
-                    if (gubun == 2) { // 소형 2분 전
-                        second = 60 * 2;
-                        previousTime = queryService.getPreviousTime(second);
-                    }
+                            if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
+                                previousTime = previousTime.substring(0, previousTime.length() - 1) + "0";
+                            if (Integer.parseInt(previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
+                                previousTime = previousTime.substring(0, previousTime.length() - 1) + "5";
+                            System.out.println("감시 해야할 시간 이후: " + previousTime);
+                        }
 
-                    // 파일 패턴으로 파일명 찾기
-                    file_name = filePattern.replace("%site%", site_cd).replace("%yyyyMMddHHmm%", previousTime);
-                    System.out.println("[파일 패턴] : " + filePattern);
-                    System.out.println("[파일 명] : " + file_name);
+                        if (gubun == 2) { // 소형 2분 전
+                            second = 60 * 2;
+                            previousTime = queryService.getPreviousTime(second);
+                        }
 
-                    // 자료감시 설정 on
-                    if (rsDto.getPermittedWatch() == 1) {
-                        // System.out.println("[자료감시 설정 on]");
+                        // 파일 패턴으로 파일명 찾기
+                        file_name = filePattern.replace("%site%", site_cd).replace("%yyyyMMddHHmm%", previousTime);
+                        System.out.println("[파일 패턴] : " + filePattern);
+                        System.out.println("[파일 명] : " + file_name);
+                        
                         boolean file_exists = sftp.fileExists(file_path, file_name, site_cd, dataKindStr, filePattern, timeZone);
                         System.out.println("[파일존재유무] : " + file_exists);
 
@@ -183,20 +184,18 @@ public class StepOneProcess extends Thread {
                             // errStr = "[자료 미수신 (WARN - file_no) query insert table1 - receive_condition]";
                             errStrData = "[자료 미수신 (WARN - file_no) query insert - receive_data]";
                         }
-
                     } else {
-                        // 자료감시 설정 off
-                        System.out.println("[자료감시 설정 off]");
+                        // 접속 X (WARN - MISS)
+                        // recv_condition = "WARN";
+                        codedtl = "siteconnect_no";
+                        recv_condition_data = "MISS";
+
+                        // errStr = "[접속 실패 query insert table1 - receive_condition]";
+                        errStrData = "[접속 실패 query insert - receive_data]";
                     }
-
                 } else {
-                    // 접속 X (WARN - MISS)
-                    // recv_condition = "WARN";
-                    codedtl = "siteconnect_no";
-                    recv_condition_data = "MISS";
-
-                    // errStr = "[접속 실패 query insert table1 - receive_condition]";
-                    errStrData = "[접속 실패 query insert - receive_data]";
+                    // 자료감시 설정 off
+                    System.out.println("["+siteStr+" 자료감시 설정 off]");
                 }
 
                 System.out.println("[파일 명] : " + file_name);

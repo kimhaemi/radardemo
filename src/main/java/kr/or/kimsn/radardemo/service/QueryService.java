@@ -12,6 +12,7 @@ import kr.or.kimsn.radardemo.dto.SmsSendMemberDto;
 import kr.or.kimsn.radardemo.dto.SmsSendOnOffDto;
 import kr.or.kimsn.radardemo.dto.SmsSendPatternDto;
 import kr.or.kimsn.radardemo.dto.StationDto;
+import kr.or.kimsn.radardemo.dto.StationStatusDto;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionCriteriaRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveConditionRepository;
 import kr.or.kimsn.radardemo.dto.repository.ReceiveDataRepository;
@@ -21,6 +22,7 @@ import kr.or.kimsn.radardemo.dto.repository.SmsSendOnOffRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendPatternRepository;
 import kr.or.kimsn.radardemo.dto.repository.SmsSendRepository;
 import kr.or.kimsn.radardemo.dto.repository.StationRepository;
+import kr.or.kimsn.radardemo.dto.repository.StationStatusRepository;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -34,6 +36,8 @@ public class QueryService {
     private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
     private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
     private final SmsSendMemberRepositroy smsSendMemberRepositroy; //수신자 그룹
+
+    private final StationStatusRepository stationStatusRepository; //지점별 운영상태
 
     private final ReceiveConditionRepository receiveConditionRepository; // 최종
     private final ReceiveDataRepository receiveDataRepository; // 이력
@@ -187,7 +191,11 @@ public class QueryService {
 
     //특정 시간 구하기
     public String getPreviousTime(int second){
-        return receiveDataRepository.getPreviousTime(second);
-        
+        return receiveDataRepository.getPreviousTime(second);   
+    }
+
+    //지점별 운영상태
+    public StationStatusDto getStationStatus(String sitecd){
+        return stationStatusRepository.findBySiteCd(sitecd);
     }
 }
