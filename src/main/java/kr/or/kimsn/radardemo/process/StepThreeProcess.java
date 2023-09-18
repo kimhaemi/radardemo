@@ -29,19 +29,19 @@ public class StepThreeProcess {
     private final QueryService queryService;
 
     private List<StationDto> srDto;
-    
+
     @Transactional
-    public void stepThree(){
-        //문자 메시지 발송 상태가 on 일때만
+    public void stepThree() {
+        // 문자 메시지 발송 상태가 on 일때만
         SmsSendOnOffDto onoffDto = queryService.getSmsSendOnOffData();
-        if(onoffDto.getValue() == 1){
+        if (onoffDto.getValue() == 1) {
             String gubunStr = "";
             String dataKindStr = "";
             int srCnt = 0;
 
             int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "gubun"));
             // System.out.println("[데몬 구분 int] : " + gubun);
-            
+
             if (gubun == 1)
                 gubunStr = "대형";
             if (gubun == 2)
@@ -68,51 +68,53 @@ public class StepThreeProcess {
 
             System.out.println("[레이더 갯수] : " + srCnt);
 
-            for(int a=0; a< srCnt; a++){
+            for (int a = 0; a < srCnt; a++) {
                 String site_cd = srDto.get(a).getSiteCd();
                 String siteStr = srDto.get(a).getName_kr();
 
                 System.out.println("[============ " + siteStr + " 정보 ==============]");
 
-                //지점별 운영상태가 정상일 때만
+                // 지점별 운영상태가 정상일 때만
                 // System.out.println("site_cd ::::: " + site_cd);
                 StationStatusDto siteStatusDto = queryService.getStationStatus(site_cd);
                 // System.out.println("siteStatusDto ::::::: " + siteStatusDto);
 
-                if(siteStatusDto.getSite_status().equals("RUN")){
+                if (siteStatusDto.getSite_status().equals("RUN")) {
                     // 최종상태조회
                     ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr, "NQC", site_cd);
                     // System.out.println("[최종상태 조회] : " + rcDto);
 
-                    if(rcDto.getRecv_condition().equals("ORDI")){
+                    if (rcDto.getRecv_condition().equals("ORDI")) {
                         System.out.println("[최종 상태 정상]");
-                    // 최종상태의 SMS 발송 기능 ON/OFF
-                    } else if(rcDto.getSms_send_activation() == 1 && !rcDto.getRecv_condition().equals("ORDI")){
+                        // 최종상태의 SMS 발송 기능 ON/OFF
+                    } else if (rcDto.getSms_send_activation() == 1 && !rcDto.getRecv_condition().equals("ORDI")) {
                         String code = rcDto.getRecv_condition();
                         String codedtl = rcDto.getCodedtl();
                         String smsCodedtl = rcDto.getCodedtl();
                         int sms_send = rcDto.getSms_send();
-                        String apply_time = rcDto.getApply_time();
 
                         // System.out.println("[gubun] : " + gubun);
                         System.out.println("[code] : " + code);
                         System.out.println("[codedtl] : " + codedtl);
 
                         // 경고 기준 (횟수 - criterion)
-                        ReceiveConditionCriteriaDto rccDto = queryService.getReceiveConditionCriteria(gubun, code, codedtl);
+                        ReceiveConditionCriteriaDto rccDto = queryService.getReceiveConditionCriteria(gubun, code,
+                                codedtl);
                         // System.out.println("[경고 기준] : " + rccDto);
                         int criterion = rccDto.getCriterion();
-                        System.out.println("["+rccDto.getName()+" '"+criterion+"'회 체크]");
+                        System.out.println("[" + rccDto.getName() + " '" + criterion + "'회 체크]");
 
-                        //문자메시지 패턴
+                        // 문자메시지 패턴
                         String smsPettern = "";
-                        if(!code.equals("ORDI")){
-                            if(codedtl.equals("siteconnect_no")) smsCodedtl = "file_no";
-                            SmsSendPatternDto smsSendPatternDto = queryService.getSmsSendPattern(1, 1, "RUN", code, smsCodedtl);
+                        if (!code.equals("ORDI")) {
+                            if (codedtl.equals("siteconnect_no"))
+                                smsCodedtl = "file_no";
+                            SmsSendPatternDto smsSendPatternDto = queryService.getSmsSendPattern(1, 1, "RUN", code,
+                                    smsCodedtl);
                             // System.out.println("[문자메시지 패턴] : " + smsSendPatternDto);
 
                             String dateTime = FormatDateUtil.formatDate("yyyy-MM-dd HH:mm:ss", new Date());
-                            
+
                             // System.out.println("[date Time] : " + dateTime);
 
                             smsPettern = smsSendPatternDto.getPattern();
@@ -120,66 +122,76 @@ public class StepThreeProcess {
 
                         }
                         System.out.println("[문자메시지 패턴] : " + smsPettern);
-                        
-                        //이력 조회
+
+                        // 이력 조회
                         List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, criterion);
-                        // List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, criterion);
+                        // List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                        // dataKindStr, criterion);
                         int cnt = 0; // 최종이력상태와 결과 값 같은것
                         String recv_con = "";
-                        for(ReceiveDataDto rd : rdDto){
+                        for (ReceiveDataDto rd : rdDto) {
                             // System.out.println("[이력 조회] : " + rd);
-                            // ORDI	정상	0	정상	1	ok
-                            // RETR	복구	3	자료 크기가 연속으로 N회 이상 정상일때	1	filesize_ok
-                            // RETR	복구	3	비 정상에서 복구되어 정상의 범위에 들 경우	1	file_ok
-                            // TORE	네트워크 복구	2	네트워크 장애 상태에서 복구되어 정상의 범위에 들때	1	network_ok
-                            // TOTA	네트워크 장애	3	대형 레이더 전 사이트 자료 미수신 일 때	1	network_no
-                            // WARN	경고	7	자료 크기가 기준파일크기보다 연속으로 N회 이상 작을때	1	filesize_no
-                            // WARN	경고	6	자료가 연속으로 N회 이상  자료 미수신일 때	1	file_no
-                            if(rd.getRecv_condition().equals("RECV")) recv_con = "ORDI"; // 정상
-                            if(rd.getRecv_condition().equals("MISS")) recv_con = "WARN"; // 경고
-                            if(rd.getRecv_condition().equals("RETR")) recv_con = "RETR"; // 복구 - 자료 미수신, 사이즈 복구
-                            if(rd.getRecv_condition().equals("TORE")) recv_con = "TORE"; // 복구 - 네트워크 복구
-                            if(rd.getRecv_condition().equals("TOTA")) recv_con = "TOTA"; // 네트워크장애
-                            
-                            if(recv_con.equals(code) && criterion == rdDto.size() && rccDto.getCodedtl().equals(rd.getCodedtl())){
+                            // ORDI 정상 0 정상 1 ok
+                            // RETR 복구 3 자료 크기가 연속으로 N회 이상 정상일때 1 filesize_ok
+                            // RETR 복구 3 비 정상에서 복구되어 정상의 범위에 들 경우 1 file_ok
+                            // TORE 네트워크 복구 2 네트워크 장애 상태에서 복구되어 정상의 범위에 들때 1 network_ok
+                            // TOTA 네트워크 장애 3 대형 레이더 전 사이트 자료 미수신 일 때 1 network_no
+                            // WARN 경고 7 자료 크기가 기준파일크기보다 연속으로 N회 이상 작을때 1 filesize_no
+                            // WARN 경고 6 자료가 연속으로 N회 이상 자료 미수신일 때 1 file_no
+                            if (rd.getRecv_condition().equals("RECV"))
+                                recv_con = "ORDI"; // 정상
+                            if (rd.getRecv_condition().equals("MISS"))
+                                recv_con = "WARN"; // 경고
+                            if (rd.getRecv_condition().equals("RETR"))
+                                recv_con = "RETR"; // 복구 - 자료 미수신, 사이즈 복구
+                            if (rd.getRecv_condition().equals("TORE"))
+                                recv_con = "TORE"; // 복구 - 네트워크 복구
+                            if (rd.getRecv_condition().equals("TOTA"))
+                                recv_con = "TOTA"; // 네트워크장애
+
+                            if (recv_con.equals(code) && criterion == rdDto.size()
+                                    && rccDto.getCodedtl().equals(rd.getCodedtl())) {
                                 cnt++;
                             }
                         }
                         System.out.println("[cnt] : " + cnt);
 
-                        if(rccDto.getCriterion() == cnt){
-                            //최종 결과의 문자 전송 상태가 0일때만 문자 전송
-                            if(sms_send == 0){
-                                //app sequence
+                        if (rccDto.getCriterion() == cnt) {
+                            // 최종 결과의 문자 전송 상태가 0일때만 문자 전송
+                            if (sms_send == 0) {
+                                // app sequence
                                 Long appSeq = queryService.getAppContentNextval();
                                 System.out.println("[문자 전송 app sequence] :" + appSeq);
-                                //문자 전송(app_send_contents) insert
+                                // 문자 전송(app_send_contents) insert
                                 queryService.intGaonAppSendContentsSave(appSeq, smsPettern);
-                                
-                                //site 수신그룹 담당자에게 문자 전송
+
+                                // site 수신그룹 담당자에게 문자 전송
                                 List<SmsSendMemberDto> smsDto = queryService.getSmsSendMemberList(dataKindStr, site_cd);
                                 System.out.println("[담당자] : " + smsDto);
-                                
-                                for(SmsSendMemberDto dto : smsDto){
+
+                                for (SmsSendMemberDto dto : smsDto) {
                                     // private int warn; //경고 -- MISS
                                     // private int retr; //복구 -- 장애 복구, 네트워크 복구
                                     // private int sms; //문자 발송 여부
                                     // private int tota; //네트워크 오류
-                                    if(dto.getWarn() == 1) { //문자발송 여부
-                                        if((code.equals("WARN") && dto.getWarn() == 1) // 장애
-                                        || (code.equals("RETR") && dto.getWarn() == 1) //복구
-                                        || (code.equals("TOTA") && dto.getWarn() == 1) //네트워크 오류
-                                        ){
+                                    if (dto.getWarn() == 1) { // 문자발송 여부
+                                        if ((code.equals("WARN") && dto.getWarn() == 1) // 장애
+                                                || (code.equals("RETR") && dto.getWarn() == 1) // 복구
+                                                || (code.equals("TOTA") && dto.getWarn() == 1) // 네트워크 오류
+                                        ) {
                                             String call_to = dto.getPhone_num().replaceAll("-", "");
                                             String call_from = DataCommon.getInfoConf("siteInfo", "call_from");
-                                            
+
                                             System.out.println("[수신자명] : " + dto.getName());
                                             System.out.println("[수신번호] : " + call_to);
                                             // System.out.println("[발신번호] : " + call_from);
-                                            
-                                            //문자 전송(app_send_data) insert
-                                            if(!call_to.equals("") && call_to.matches("[0-9]+")){ //전화번호가 아니면 안되있는건 보낼 필요가 없지..
-                                                queryService.insGaonAppSendDataSave(appSeq, call_to, call_from); //템플릿 코드 넣어야함.
+
+                                            // 문자 전송(app_send_data) insert
+                                            if (!call_to.equals("") && call_to.matches("[0-9]+")) { // 전화번호가 아니면 안되있는건
+                                                                                                    // 보낼 필요가 없지..
+                                                queryService.insGaonAppSendDataSave(appSeq, call_to, call_from); // 템플릿
+                                                                                                                 // 코드
+                                                                                                                 // 넣어야함.
                                             } else {
                                                 System.out.println("[수신번호 확인] : " + call_to);
                                             }
@@ -189,7 +201,20 @@ public class StepThreeProcess {
 
                                 System.out.println("[문자 전송 여부 update]");
                                 sms_send = 1;
-                                queryService.updateReceiveCondition(apply_time, code, codedtl, sms_send, code, site_cd, dataKindStr, "NQC");
+                                int second = 60 * 4 + 30;
+                                String previousTime = queryService.getPreviousTime(second);
+                                System.out.println("감시 해야할 시간 이전: " + previousTime);
+
+                                if (Integer.parseInt(
+                                        previousTime.substring(previousTime.length() - 1, previousTime.length())) <= 5)
+                                    previousTime = previousTime.substring(0, previousTime.length() - 1) + "0";
+                                if (Integer.parseInt(
+                                        previousTime.substring(previousTime.length() - 1, previousTime.length())) > 5)
+                                    previousTime = previousTime.substring(0, previousTime.length() - 1) + "5";
+                                System.out.println("감시 해야할 시간 이후: " + previousTime);
+
+                                queryService.updateReceiveCondition(previousTime, code, codedtl, sms_send, code,
+                                        site_cd, dataKindStr, "NQC");
                                 // queryService.updateReceiveData(code, 0, site_cd, dataKindStr, "NQC", code);
                             } else {
                                 System.out.println("[이미 문자 전송했으므로 안해도 됨]");
@@ -200,10 +225,10 @@ public class StepThreeProcess {
                             System.out.println("문자 전송 안해도 됨");
                         }
                     } else {
-                        System.out.println("["+siteStr+" 최종상태 문자 발송 기능 off]");
+                        System.out.println("[" + siteStr + " 최종상태 문자 발송 기능 off]");
                     }
                 } else {
-                    System.out.println("["+siteStr+"는 유지보수 상태여서 문자 전송 안됨]");
+                    System.out.println("[" + siteStr + "는 유지보수 상태여서 문자 전송 안됨]");
                 }
             }
         } else {

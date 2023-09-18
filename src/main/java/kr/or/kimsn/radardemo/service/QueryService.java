@@ -32,12 +32,12 @@ public class QueryService {
     private final StationRepository stationRepository; // site
     private final ReceiveSettingRepository receiveSettingRepository;
     private final SmsSendOnOffRepository smsSendOnOffRepository;
-    private final ReceiveConditionCriteriaRepository receiveConditionCriteriaRepository;//경고 기준
-    private final SmsSendPatternRepository smsSendPatternRepository;//문자메시지 패턴
-    private final SmsSendRepository smsSendRepository; //문자 메시지 전송(app_send_data, app_send_contents)
-    private final SmsSendMemberRepositroy smsSendMemberRepositroy; //수신자 그룹
+    private final ReceiveConditionCriteriaRepository receiveConditionCriteriaRepository;// 경고 기준
+    private final SmsSendPatternRepository smsSendPatternRepository;// 문자메시지 패턴
+    private final SmsSendRepository smsSendRepository; // 문자 메시지 전송(app_send_data, app_send_contents)
+    private final SmsSendMemberRepositroy smsSendMemberRepositroy; // 수신자 그룹
 
-    private final StationStatusRepository stationStatusRepository; //지점별 운영상태
+    private final StationStatusRepository stationStatusRepository; // 지점별 운영상태
 
     private final ReceiveConditionRepository receiveConditionRepository; // 최종
     private final ReceiveDataRepository receiveDataRepository; // 이력
@@ -53,69 +53,76 @@ public class QueryService {
     }
 
     // 최종 처리 상태
-    public List<ReceiveConditionDto> getReceiveConditionList(String dataKindStr, String data_type){
+    public List<ReceiveConditionDto> getReceiveConditionList(String dataKindStr, String data_type) {
         return receiveConditionRepository.findByDataKindAndDataType(dataKindStr, data_type);
     }
 
     // 최종 처리 상태 - site 별
-    public ReceiveConditionDto getReceiveCondition(String dataKindStr, String data_type, String site_cd){
+    public ReceiveConditionDto getReceiveCondition(String dataKindStr, String data_type, String site_cd) {
         return receiveConditionRepository.findByDataKindAndDataTypeAndSite(dataKindStr, data_type, site_cd);
     }
 
     // 경고 기준 (횟수 - criterion) - List
-    public List<ReceiveConditionCriteriaDto> getReceiveConditionCriteriaList(int gubun){
+    public List<ReceiveConditionCriteriaDto> getReceiveConditionCriteriaList(int gubun) {
         return receiveConditionCriteriaRepository.findByGubunOrderBySort(gubun);
     }
 
     // 경고 기준 (횟수 - criterion) - 단건
-    public ReceiveConditionCriteriaDto getReceiveConditionCriteria(int gubun, String code, String codedtl){
+    public ReceiveConditionCriteriaDto getReceiveConditionCriteria(int gubun, String code, String codedtl) {
         return receiveConditionCriteriaRepository.getReceiveConditionCriteria(gubun, code, codedtl);
     }
 
-    //문자메시지 패턴
-    public SmsSendPatternDto getSmsSendPattern(int activation, int status, String mode, String code, String codedtl){
-        return smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(activation, status, mode, code, codedtl);
+    // 문자메시지 패턴
+    public SmsSendPatternDto getSmsSendPattern(int activation, int status, String mode, String code, String codedtl) {
+        return smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(activation, status, mode,
+                code, codedtl);
     }
 
     // data 처리 이력
-    public List<ReceiveDataDto> getReceiveDataList(String site, String dataKindStr, int count){
+    public List<ReceiveDataDto> getReceiveDataList(String site, String dataKindStr, int count) {
         return receiveDataRepository.getReceiveDataList(site, dataKindStr, count);
     }
 
     // 문자 메시지 on/off
-    public SmsSendOnOffDto getSmsSendOnOffData(){
+    public SmsSendOnOffDto getSmsSendOnOffData() {
         return smsSendOnOffRepository.findByCode("STOPSMS");
     }
 
     // data 처리 이력 - dtl
-    public List<ReceiveDataDto> getReceiveDataCodedtlList(String site, String dataKindStr, int count, String codedtl){
+    public List<ReceiveDataDto> getReceiveDataCodedtlList(String site, String dataKindStr, int count, String codedtl) {
         return receiveDataRepository.getReceiveDataCodedtlList(site, dataKindStr, count, codedtl);
     }
 
-    //site 수신그룹 담당자
-    public List<SmsSendMemberDto> getSmsSendMemberList(String data_kind, String site){
+    // site 수신그룹 담당자
+    public List<SmsSendMemberDto> getSmsSendMemberList(String data_kind, String site) {
         return smsSendMemberRepositroy.getSmsSendMemberList(data_kind, site);
     }
 
-    //app sequence
-    public Long getAppContentNextval(){
+    // app sequence
+    public Long getAppContentNextval() {
         return Long.parseLong(smsSendRepository.getAppContentNextval());
     }
 
-    //최종 결과 update query
-    public Integer updateReceiveCondition(String apply_time, String new_recv_condition, String new_codedtl, int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType){
-        return receiveConditionRepository.updateReceiveCondition(apply_time, new_recv_condition, new_codedtl, sms_send, where_recv_condition, site, dataKindStr, dataType);
-        //select * from receive_condition rc where recv_condition = 'TOTA' and site = 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
+    // 최종 결과 update query
+    public Integer updateReceiveCondition(String apply_time, String new_recv_condition, String new_codedtl,
+            int sms_send, String where_recv_condition, String site, String dataKindStr, String dataType) {
+        return receiveConditionRepository.updateReceiveCondition(apply_time, new_recv_condition, new_codedtl, sms_send,
+                where_recv_condition, site, dataKindStr, dataType);
+        // select * from receive_condition rc where recv_condition = 'TOTA' and site =
+        // 'TEST' and data_kind = 'RDR' and data_type = 'NQC';
     }
 
-    //이력 update
-    public Integer updateReceiveData(String new_recv_condition, String new_codedtl, String site, String dataKindStr, String dataType, String where_recv_condition, String data_kst){
-        return receiveDataRepository.updateReceiveData(new_recv_condition, new_codedtl, site, dataKindStr, dataType, where_recv_condition, data_kst);
+    // 이력 update
+    public Integer updateReceiveData(String new_recv_condition, String new_codedtl, String site, String dataKindStr,
+            String dataType, String where_recv_condition, String data_kst) {
+        return receiveDataRepository.updateReceiveData(new_recv_condition,
+                new_codedtl, site, dataKindStr, dataType, where_recv_condition, data_kst);
     }
 
-    //최종 결과 update
+    // 최종 결과 update
     public void insReceiveCondition(String site_cd, String dataKindStr, String dataType, String recv_condition,
-            String apply_time, String last_check_time, int sms_send, int sms_send_activation, int status, String codedtl) {
+            String apply_time, String last_check_time, int sms_send, int sms_send_activation, int status,
+            String codedtl) {
         ReceiveConditionDto rcDto = new ReceiveConditionDto();
 
         System.out.println("[==updateReceiveCondition==]");
@@ -158,7 +165,8 @@ public class QueryService {
         // System.out.println("data_kst : " + data_kst);
         // System.out.println("recv_time : " + recv_time);
         // System.out.println("recv_condition : " + recv_condition);
-        // System.out.println("recv_condition_check_time : " + recv_condition_check_time);
+        // System.out.println("recv_condition_check_time : " +
+        // recv_condition_check_time);
         // System.out.println("file_name : " + file_name);
         // System.out.println("file_size : " + file_size);
         // System.out.println("codedtl : " + codedtl);
@@ -178,24 +186,23 @@ public class QueryService {
         receiveDataRepository.save(rdDto);
     }
 
-    //문자 전송(app_send_data) insert
-    public void insGaonAppSendDataSave(Long appSeq, String call_to, String call_from){
-        smsSendRepository.gaonAppSendDataSave(appSeq, call_to, call_from); //템플릿 코드 넣어야함.
+    // 문자 전송(app_send_data) insert
+    public void insGaonAppSendDataSave(Long appSeq, String call_to, String call_from) {
+        smsSendRepository.gaonAppSendDataSave(appSeq, call_to, call_from); // 템플릿 코드 넣어야함.
     }
 
-    //문자 전송(app_send_contents) insert
-    //문자 전송(app_send_contents) insert
-    public void intGaonAppSendContentsSave(Long appSeq, String smsPettern){
+    // 문자 전송(app_send_contents) insert
+    public void intGaonAppSendContentsSave(Long appSeq, String smsPettern) {
         smsSendRepository.gaonAppSendContentsSave(appSeq, smsPettern);
     }
 
-    //특정 시간 구하기
-    public String getPreviousTime(int second){
-        return receiveDataRepository.getPreviousTime(second);   
+    // 특정 시간 구하기
+    public String getPreviousTime(int second) {
+        return receiveDataRepository.getPreviousTime(second);
     }
 
-    //지점별 운영상태
-    public StationStatusDto getStationStatus(String sitecd){
+    // 지점별 운영상태
+    public StationStatusDto getStationStatus(String sitecd) {
         return stationStatusRepository.findBySiteCd(sitecd);
     }
 }

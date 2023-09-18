@@ -15,8 +15,9 @@ import kr.or.kimsn.radardemo.dto.ReceiveDataDto;
 import kr.or.kimsn.radardemo.dto.StationDto;
 import kr.or.kimsn.radardemo.service.QueryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-// @Slf4j
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StepTwoProcess {
@@ -26,23 +27,13 @@ public class StepTwoProcess {
 
     @Transactional
     public void stepTwo() {
-        String gubunStr = "";
         String dataKindStr = "";
-        String dataType = "NQC"; // 데이터 타입
         int srCnt = 0; // site
 
         String currentTime = FormatDateUtil.formatDate("yyyy-MM-dd HH:mm:ss", new Date());
 
         int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "gubun"));
         // System.out.println("[데몬 구분 int] : " + gubun);
-
-        if (gubun == 1)
-            gubunStr = "대형";
-        if (gubun == 2)
-            gubunStr = "소형";
-        if (gubun == 3)
-            gubunStr = "공항";
-        // System.out.println("[데몬 구분] : " + gubunStr);
 
         if (gubun == 1)
             dataKindStr = "RDR";
@@ -82,8 +73,9 @@ public class StepTwoProcess {
 
         for (int a = 0; a < srCnt; a++) {
 
-            String new_recv_condition = "ORDI"; // 정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
-            String recv_con_dtl = "ok"; // 정상(ok) / 장애(file_no, filesize_no, siteconnect_no) / 네트워크 장애(network_no)
+            String new_recv_condition = "ORDI"; // 정상(ok) / 장애(file_no, filesize_no,siteconnect_no) / 네트워크
+                                                // 장애(network_no)
+            String recv_con_dtl = "ok"; // 정상(ok) / 장애(file_no, filesize_no,siteconnect_no) / 네트워크 장애(network_no)
 
             String old_recv_condition = "";
             String apply_time = "";
@@ -94,9 +86,10 @@ public class StepTwoProcess {
             System.out.println("[============ " + siteStr + " 정보 ==============]");
 
             if (all_site_network_no == srCnt) {
-                System.out.println("============================== 전 사이트 네트워크 장애 ================================");
+                System.out.println("============================== 전 사이트 네트워크 장애================================");
                 // 이력 update
-                queryService.updateReceiveData("TOTA", "network_no", site_cd, dataKindStr, "NQC", "MISS", currentTime);
+                queryService.updateReceiveData("TOTA", "network_no", site_cd, dataKindStr,
+                        "NQC", "MISS", currentTime);
             }
 
             System.out.println("dataKindStr : " + dataKindStr);
@@ -111,19 +104,23 @@ public class StepTwoProcess {
             // 최종 상태가 TOTA 이면 네트워크 복구 이력으로 update
             if (rcDto.getRecv_condition().equals("TOTA")) {
                 // 이력 update
-                queryService.updateReceiveData("TORE", "network_ok", site_cd, dataKindStr, "NQC", "RECV", currentTime);
+                queryService.updateReceiveData("TORE", "network_ok", site_cd, dataKindStr,
+                        "NQC", "RECV", currentTime);
             }
             // 최종 상태가 WARN 에서
             if (rcDto.getRecv_condition().equals("WARN")) {
                 // 이력 update
                 // 자료가 수신되었을 때
                 if (rcDto.getCodedtl().equals("file_no")) {
-                    queryService.updateReceiveData("RETR", "file_ok", site_cd, dataKindStr, "NQC", "RECV", currentTime);
+                    queryService.updateReceiveData("RETR", "file_ok", site_cd, dataKindStr,
+                            "NQC", "RECV", currentTime);
                 }
 
                 // 파일크기가 정상 수신되었을때
                 if (rcDto.getCodedtl().equals("filesize_no")) {
-                    queryService.updateReceiveData("RETR", "filesize_ok", site_cd, dataKindStr, "NQC", "RECV", currentTime);
+                    queryService.updateReceiveData("RETR", "filesize_ok", site_cd, dataKindStr,
+                            "NQC", "RECV",
+                            currentTime);
                 }
             }
 
@@ -132,7 +129,8 @@ public class StepTwoProcess {
                 // 복구 > 정상
                 if (rcDto.getRecv_condition().equals("RETR")) {
                     // 정상(ok)
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, 1);
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                            dataKindStr, 1);
                     for (ReceiveDataDto rd : rdDto) {
                         if (rd.getRecv_condition().equals("RECV") && rd.getCodedtl().equals("ok")) {
                             new_recv_condition = "ORDI";
@@ -144,7 +142,9 @@ public class StepTwoProcess {
                 // 장애 > 복구 - 최종 상태가 '주의 또는 경고' 상태에서 자료가 연속으로 N회 이상 자료가 수신되었을 때
                 if (rcDto.getRecv_condition().equals("WARN")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                            dataKindStr,
+                            rcc.getCriterion());
 
                     // 복구(file_ok)
                     if (rcc.getCodedtl().equals("file_ok")) {
@@ -179,7 +179,9 @@ public class StepTwoProcess {
                 // 네트워크 복구(network_ok)
                 if (rcc.getCode().equals("TORE")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                            dataKindStr,
+                            rcc.getCriterion());
                     int cnt = 0;
                     for (ReceiveDataDto rd : rdDto) {
                         if (rd.getRecv_condition().equals(rcc.getCode())) {
@@ -197,7 +199,9 @@ public class StepTwoProcess {
                 // 네트워크 장애(network_no)
                 if (rcc.getCode().equals("TOTA")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                            dataKindStr,
+                            rcc.getCriterion());
                     int cnt = 0;
                     for (ReceiveDataDto rd : rdDto) {
                         if (rd.getRecv_condition().equals(rcc.getCodedtl())) {
@@ -214,7 +218,9 @@ public class StepTwoProcess {
                 // 장애
                 if (rcc.getCode().equals("WARN")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr, rcc.getCriterion());
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
+                            dataKindStr,
+                            rcc.getCriterion());
 
                     // 장애(file_no)
                     if (rcc.getCodedtl().equals("file_no")) {
@@ -266,7 +272,8 @@ public class StepTwoProcess {
 
             // if (!new_recv_condition.equals("")) {
             // 최종상태조회
-            // ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr, "NQC", site_cd);
+            // ReceiveConditionDto rcDto = queryService.getReceiveCondition(dataKindStr,
+            // "NQC", site_cd);
             // System.out.println("[최종상태 조회] : " + rcDto);
             int sms_send = 0;
             if (rcDto.getRecv_condition().equals(new_recv_condition)) {
@@ -281,8 +288,12 @@ public class StepTwoProcess {
             System.out.println(siteStr + " 별 최종상태 update");
             System.out.println("new_recv_condition ::: " + new_recv_condition);
             System.out.println("recv_con_dtl ::: " + recv_con_dtl);
-            queryService.updateReceiveCondition(apply_time, new_recv_condition, recv_con_dtl, sms_send, old_recv_condition, site_cd, dataKindStr, "NQC");
-            // queryService.insReceiveCondition(site_cd, dataKindStr, dataType, new_recv_condition, currentTime, currentTime, sms_send, rcDto.getSms_send_activation(), 1, recv_con_dtl);
+            queryService.updateReceiveCondition(apply_time, new_recv_condition,
+                    recv_con_dtl, sms_send,
+                    old_recv_condition, site_cd, dataKindStr, "NQC");
+            // queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
+            // new_recv_condition, currentTime, currentTime, sms_send,
+            // rcDto.getSms_send_activation(), 1, recv_con_dtl);
             // queryService.insReceiveCondition(site_cd, dataKindStr, dataType,
             // new_recv_condition, rcDto.getApply_time(), currentTime, sms_send,
             // rcDto.getSms_send_activation(), 1, recv_con_dtl);
