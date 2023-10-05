@@ -73,9 +73,11 @@ public class QueryService {
     }
 
     // 문자메시지 패턴
-    public SmsSendPatternDto getSmsSendPattern(int activation, int status, String mode, String code, String codedtl) {
-        return smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(activation, status, mode,
-                code, codedtl);
+    public List<SmsSendPatternDto> getSmsSendPattern(int activation, int status, String code, String codedtl) {
+        // return
+        // smsSendPatternRepository.findByActivationAndStatusAndModeAndCodeAndCodedtl(activation,
+        // status, mode, code, codedtl);
+        return smsSendPatternRepository.findByActivationAndStatusAndCodeAndCodedtl(activation, status, code, codedtl);
     }
 
     // data 처리 이력
@@ -101,6 +103,13 @@ public class QueryService {
     // app sequence
     public Long getAppContentNextval() {
         return Long.parseLong(smsSendRepository.getAppContentNextval());
+    }
+
+    // 최종결과 문자발송 update
+    public Integer updateReceiveConditionSms(int sms_send, String where_recv_condition, String site, String dataKindStr,
+            String dataType) {
+        return receiveConditionRepository.updateReceiveConditionSms(sms_send, where_recv_condition, site, dataKindStr,
+                dataType);
     }
 
     // 최종 결과 update query
@@ -152,6 +161,7 @@ public class QueryService {
 
     }
 
+    // 쓸데가 있겠지...
     public void insReceiveData(String dataKindStr, String site_cd, String dataType, String data_time, String data_kst,
             String recv_time,
             String recv_condition, String recv_condition_check_time, String file_name, Long file_size, String codedtl) {
@@ -176,7 +186,7 @@ public class QueryService {
         rdDto.setData_type(dataType);
         rdDto.setData_time(data_time);
         rdDto.setData_kst(data_kst);
-        rdDto.setRecv_time(data_kst);
+        rdDto.setRecv_time(recv_time);
         rdDto.setRecv_condition(recv_condition);
         rdDto.setRecv_condition_check_time(recv_condition_check_time);
         rdDto.setFile_name(file_size == 0 ? "" : file_name);
@@ -199,6 +209,11 @@ public class QueryService {
     // 특정 시간 구하기
     public String getPreviousTime(int second) {
         return receiveDataRepository.getPreviousTime(second);
+    }
+
+    // 지점별 운영상태
+    public List<StationStatusDto> getStationStatusGubun(int gubun) {
+        return stationStatusRepository.findByGubun(gubun);
     }
 
     // 지점별 운영상태

@@ -17,8 +17,8 @@ public class StationStatusDto {
     private String siteCd;
     private String site_name;
     private String site_status;
-    private String sort_order;
-    private String gubun;
-    private String status;
-    
+    private int sort_order;
+    private int gubun;
+    private int status;
+
 }

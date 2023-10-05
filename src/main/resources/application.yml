@@ -7,14 +7,13 @@ spring:
 # DB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # url: jdbc:mysql://175.197.48.213:3306/
-    # url: jdbc:mysql://175.197.48.213:23307/watchdog
-    url: jdbc:mysql://localhost:3306/watchdog
     username: root
-    #local
-    # password: test123
-    # password: Test123~!@
-    password: Watch1234!
+    # local
+    url: jdbc:mysql://175.197.48.213:3306/
+    password: Test123~!@
+    # Real
+    # url: jdbc:mysql://localhost:3306/watchdog
+    # password: Watch1234!
   
   batch:
     jdbc:
@@ -24,14 +23,11 @@ spring:
 # query
   jpa:
     open-in-view: false #spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-    show-sql: true # true 설정시 JPA 쿼리문 확인 가능
+    # show-sql: true # true 설정시 JPA 쿼리문 확인 가능
     # format-sql: true # query 보기 예쁘게
     # use_sql_comments: true
     # hibernate: 
     #   ddl-auto: none # DDL(create, alter, drop, none) 정의시 DB의 고유 기능을 사용할 수 있다.
-
-
-    
 
 # JPA의 구현체인 Hibernate가 동작하면서 발생한 SQL의 가독성을 높여준다.
 # spring.jpa.properties.hibernate.format_sql=true
@@ -46,3 +42,31 @@ spring:
     #     import: 
     #         - file:C:/0000_de/radardemon/conf/siteInfoSetting.conf
     #         # - setting2.yml
+
+# 디버그
+logging:
+  config: 
+    # classpath: log4j2.yml
+    classpath: log4j2.yml
+  level: # 각 package 별로 로깅 레벨을 지정할 수 있다.
+    root: info
+    '[kr.or.kimsn.radardemo]': DEBUG
+    # '[kr.or.kimsn.radarsms.restApiController.SaveController]': debug
+    # org:
+    #   hibernate:
+    #     type: trace
+    #       descriptor:
+    #         sql: trace #query에 어떤 값이 들어갔는지 확인
+  # file:
+    # # name: ${user.dir}/log/test.log  # 로깅 파일 위치이다.
+    # name: ./logs/radardemo.log  # 로깅 파일 위치이다.
+    # max-history: 100 # 로그 파일 삭제 주기이다. 7일 이후 로그는 삭제한다.
+    # max-size: 100MB  # 로그 파일 하나당 최대 파일 사이즈이다.
+    # # logging.level.org.springframework.security=DEBUG
+    # # logging.level.root=info
+  #  로그 패턴 설정
+  pattern:
+    console: "%-5level [%d{yyyy-MM-dd HH:mm:ss}] - %msg%n"
+    file: "%-5level [%d{yyyy-MM-dd HH:mm:ss}] - %msg%n"
+# logging.pattern.console=%-5level %d{yyyy-MM-dd HH:mm:ss}[%thread] [%F - %M] [%logger{0}:%line] - %msg%n
+# logging.pattern.file= %-5level %d{yyyy-MM-dd HH:mm:ss}[%thread] [%F - %M] [%logger{0}:%line] - %msg%n

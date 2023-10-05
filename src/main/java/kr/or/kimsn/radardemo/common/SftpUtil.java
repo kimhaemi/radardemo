@@ -30,6 +30,7 @@ public class SftpUtil {
         boolean result = false;
 
         int connectTimeOut = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "connectTimeOut"));
+        int sessionTimeOut = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "sessionTimeOut"));
 
         // JSch 객체를 생성
         jSch = new JSch();
@@ -48,7 +49,7 @@ public class SftpUtil {
             session.setConfig(config);
 
             // 접속
-            session.connect();
+            session.connect(sessionTimeOut * 1000);
 
             // sftp 채널 열기 및 접속
             channel = session.openChannel("sftp");
@@ -61,14 +62,14 @@ public class SftpUtil {
         } catch (JSchException e) {
             result = false;
             // e.printStackTrace();
-            // System.out.println("SFTP: server connect failed.");
+            // log.info("SFTP: server connect failed.");
         }
 
         return result;
     }
 
     // sftp 서버 연결 종료
-    private void close() {
+    public void close() {
         if (session != null) {
             session.disconnect();
         }
@@ -88,12 +89,12 @@ public class SftpUtil {
      */
     public boolean fileExists(String path, String fileName, String siteCd, String dataKind, String filePattern,
             String timeZone) {
-        System.out.println("[파일 경로] : " + path);
+        log.info("[파일 경로] : " + path);
 
         Vector res = null;
         try {
             res = channelSftp.ls(path + "/" + fileName);
-            System.out.println("[파일 존재여부 확인]  : " + res.size());
+            log.info("[파일 존재여부 확인]  : " + res.size());
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 return false;
@@ -104,18 +105,18 @@ public class SftpUtil {
 
     // 파일 사이즈
     public Long fileSize(String path, String fileName, Long file_size_min, Long file_size_max) {
-        System.out.println("[file size check]");
+        log.info("[file size check]");
         Long fileSize = 0L;
         try {
             fileSize = channelSftp.lstat(path + "/" + fileName).getSize();
 
-            // System.out.println("[파일 size] : " + fileSize);
+            // log.info("[파일 size] : " + fileSize);
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 return 0L;
             }
             // } catch (IOException e) {
-            // System.out.println("file size error : " + e);
+            // log.info("file size error : " + e);
             // return 0L;
         }
         return fileSize;

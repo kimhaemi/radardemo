@@ -5,16 +5,25 @@ import java.util.Properties;
 
 public class DataCommon {
 
-    // private final static String siteInfo = "./conf/siteInfoSetting.conf";
-    // private final static String ipInfo = "./../ipConf/siteIPInfoSetting.conf";
+    // local
+    private final static String siteInfo = "./conf/siteInfoSetting.conf";
+    private final static String ipInfo = "./../ipConf/siteIPInfoSetting.conf";
 
+    // 대형
     // private final static String siteInfo =
     // "/home/watcher/deamon/RDR/conf/siteInfoSetting.conf";
-    private final static String siteInfo = "/home/watcher/deamon/TDWR/conf/siteInfoSetting.conf";
+    // private final static String ipInfo =
+    // "/home/watcher/ipConf/RDR/siteIPInfoSetting.conf";
+
+    // 소형
     // private final static String siteInfo =
     // "/home/watcher/deamon/SDR/conf/siteInfoSetting.conf";
+    // private final static String ipInfo =
+    // "/home/watcher/ipConf/SDR/siteIPInfoSetting.conf";
 
-    private final static String ipInfo = "/home/watcher/ipConf/siteIPInfoSetting.conf";
+    // 공항
+    // private final static String siteInfo = "/home/watcher/deamon/TDWR/conf/siteInfoSetting.conf";
+    // private final static String ipInfo = "/home/watcher/ipConf/TDWR/siteIPInfoSetting.conf";
 
     public static String getInfoConf(String infoStr, String tp) {
         String confInfo = "";

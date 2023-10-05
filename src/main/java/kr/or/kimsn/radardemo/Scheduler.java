@@ -2,6 +2,10 @@ package kr.or.kimsn.radardemo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -9,9 +13,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import kr.or.kimsn.radardemo.common.DataCommon;
+import kr.or.kimsn.radardemo.dto.StationDto;
 import kr.or.kimsn.radardemo.process.StepOneProcess;
-import kr.or.kimsn.radardemo.process.StepThreeProcess;
+import kr.or.kimsn.radardemo.process.StepOneProcessTwo;
 import kr.or.kimsn.radardemo.process.StepTwoProcess;
+// import kr.or.kimsn.radardemo.process.StepThreeProcess;
 import kr.or.kimsn.radardemo.service.QueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,52 +30,106 @@ public class Scheduler {
 
     private final QueryService queryService;
 
-    // private String crontabSeconds = DataCommon.getInfoConf("ipInfo",
-    // "crontabSeconds");
-    // private String crontabHours = DataCommon.getInfoConf("ipInfo",
-    // "crontabHours");
-    // private String crontabDays = DataCommon.getInfoConf("ipInfo", "crontabDays");
-    // private String crontabMonth = DataCommon.getInfoConf("ipInfo",
-    // "crontabMonth");
-    // private String crontabWeek = DataCommon.getInfoConf("ipInfo", "crontabWeek");
+    private List<StationDto> srDto;
 
     // * * * * * *
     // 초(0-59) 분(0-59) 시간(0-23) 일(1-31) 월(1-12) 요일(0-7)
-    // //대형, 공항
-    @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * ?") // 6분 00초
+    // 대형, 공항
+    @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *") // 6분 00초
     // 소형
-    // @Scheduled(cron = "30 0-59 * * * ?") // 매분 30초
-    // @Scheduled(fixedDelay = 30000) //30초마다
+    // @Scheduled(cron = "30 0-59 * * * *") // 매분 30초
+    // @Scheduled(fixedDelay = 180000) // 30초마다
     @Async
     public void cronJobSch() throws InterruptedException {
+
         int PauseTime = Integer.parseInt(DataCommon.getInfoConf("ipInfo", "PauseTime"));
-
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        System.out.println("[=================== 1번째 프로세스 ===================] " + LocalDateTime.now().format(dtf));
-        // System.out.println("[site 접속 및 파일 처리 Start] : " +
-        // LocalDateTime.now().format(dtf));
+        String mode = DataCommon.getInfoConf("siteInfo", "mode");
+        int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "gubun"));
 
-        StepOneProcess oneProc = new StepOneProcess(queryService);
-        oneProc.start();
+        String gubunStr = ""; // 데몬 구분
+        int srCnt = 0; // for문 site 갯수
+
+        if (gubun == 1)
+            gubunStr = "대형";
+        if (gubun == 2)
+            gubunStr = "소형";
+        if (gubun == 3)
+            gubunStr = "공항";
+        log.info("[데몬 구분] : " + gubunStr);
+
+        if (!mode.equals("test")) {
+            srDto = queryService.getStation(gubun);
+            srCnt = srDto.size();
+        }
+
+        StepOneProcessTwo stepone = new StepOneProcessTwo(queryService);
+
+        // Executor exec = Executors.newFixedThreadPool(srCnt);
+        ExecutorService exec = Executors.newCachedThreadPool(); // 60초 동안 아무일도 하지 않으면 유휴상태라 판단 쓰레드 제거
+        // ExecutorService exec = new ThreadPoolExecutor(3, 200, 120, TimeUnit.SECONDS,
+        // new SynchronousQueue<>());
+
+        for (int a = 0; a < srCnt; a++) {
+            int cnt = a;
+            Runnable task = new Runnable() {
+                public void run() {
+                    stepone.stepOne(mode, gubun, srDto.get(cnt));
+
+                }
+            };
+            // exec.execute(task);
+            exec.submit(task);
+            Thread.sleep(500);
+        }
+        exec.shutdown();
 
         Thread.sleep(PauseTime * 1000); // 20초
-        System.out.println("[" + PauseTime + "초 후 다음] : " + LocalDateTime.now().format(dtf));
-        System.out.println("[=================== 2번째 프로세스 ===================] " + LocalDateTime.now().format(dtf));
-        // System.out.println("[결과 data update - 복구, 정상 등등]");
-
+        log.info("[" + PauseTime + "초 후 다음] : " + LocalDateTime.now().format(dtf));
+        log.info("[=================== 2번째 프로세스 ===================] " + LocalDateTime.now().format(dtf));
         StepTwoProcess twoProc = new StepTwoProcess(queryService);
         twoProc.stepTwo();
+        twoProc = null;
+        log.info("[=================== end ===================]");
 
-        Thread.sleep(PauseTime * 1000); // 20초
-        System.out.println("[" + PauseTime + "초 후 다음] : " + LocalDateTime.now().format(dtf));
-        System.out.println("[=================== 3번째 프로세스 ===================] " + LocalDateTime.now().format(dtf));
-        // System.out.println("[문자 전송 여부 체크 start] : " +
+        // int PauseTime = Integer.parseInt(DataCommon.getInfoConf("ipInfo",
+        // "PauseTime"));
+
+        // DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // log.info("[=================== 1번째 프로세스 ===================] " +
         // LocalDateTime.now().format(dtf));
+        // try {
+        // for (int a = 0; a < 11; a++) {
+        // System.out.println("A ::: " + a);
+        // StepOneProcess oneProc = new StepOneProcess(queryService);
+        // oneProc.start();
+        // // oneProc.run();
+        // }
+        // // oneProc = null;
+        // } catch (Exception e) {
+        // log.info("[==== StepOneProcess error ===] : " + e);
+        // // TODO: handle exception
+        // }
 
-        StepThreeProcess threeProc = new StepThreeProcess(queryService);
-        threeProc.stepThree();
+        // // Thread.sleep(PauseTime * 1000); // 20초
+        // // log.info("[" + PauseTime + "초 후 다음] : " +
+        // LocalDateTime.now().format(dtf));
+        // // log.info("[=================== 2번째 프로세스 ===================] " +
+        // // LocalDateTime.now().format(dtf));
 
-        // System.out.println("[문자 전송 여부 체크 end] : " + LocalDateTime.now().format(dtf));
+        // // StepTwoProcess twoProc = new StepTwoProcess(queryService);
+        // // twoProc.stepTwo();
+
+        // // Thread.sleep(PauseTime * 1000); // 20초
+        // // log.info("[" + PauseTime + "초 후 다음] : " +
+        // // LocalDateTime.now().format(dtf));
+        // // log.info("[=================== 3번째 프로세스 ===================] " +
+        // // LocalDateTime.now().format(dtf));
+
+        // // StepThreeProcess threeProc = new StepThreeProcess(queryService);
+        // // threeProc.stepThree();
+
+        // // log.info("[문자 전송 여부 체크 end] : " + LocalDateTime.now().format(dtf));
 
     }
 

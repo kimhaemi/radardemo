@@ -80,7 +80,7 @@ public interface SmsSendRepository extends JpaRepository<SmsSendDto, Long> {
 			", :call_to      -- CALL_FROM  = 수신번호 (숫자만 입력)\n" +
 			", '0'             -- = 접수요청 = 0 (반드시 0으로만 입력)\n" +
 			", 'KAKAO'         -- = 앱메시지 구분 : KAKAO(카카오), NAVER(네이버) 대문자로 입력\n" +
-			", 'temp_0001' -- :templateCode   -- = 사용할 템플릿코드\n" +
+			", 'radar_0001' -- :templateCode   -- = 사용할 템플릿코드\n" +
 			// ", 'template_0001' -- = 사용할 템플릿코드\n" +
 			", 'L'             -- = GAON_MSG_TYPE ='L' 입력 고정 (실패시 자동 바이트 계산 후 SMS/LMS 재접수 처리)\n" +
 			")\n")
