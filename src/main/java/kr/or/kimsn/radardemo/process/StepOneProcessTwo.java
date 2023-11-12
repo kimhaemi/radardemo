@@ -78,6 +78,7 @@ public class StepOneProcessTwo {
                 log.info("[" + siteStr + " pwd] : " + site_pwd);
 
                 ReceiveSettingDto rsDto = queryService.getrRceiveSetting(dataKindStr);
+                // System.out.println("rsDto ::: " + rsDto);
 
                 // 자료감시 설정 on
                 if (rsDto.getPermittedWatch() == 1) {
@@ -190,10 +191,11 @@ public class StepOneProcessTwo {
                         // codedtl = "ok";
                         // recv_condition_data = "RECV";
 
-                        if (!site_cd.equals("KWK")) {
-                            codedtl = "ok";
-                            recv_condition_data = "RECV";
-                        }
+                        // if (site_cd.equals("BRI") || site_cd.equals("PSN")) {
+                        // codedtl = "ok";
+                        // recv_condition_data = "RECV";
+                        // }
+
                         // errStr = "[접속 실패 query insert table1 - receive_condition]";
                         errStrData = "[" + siteStr + " 접속 실패 query insert - receive_data]";
                     }

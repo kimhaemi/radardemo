@@ -2,13 +2,10 @@ package kr.or.kimsn.radardemo.process;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import kr.or.kimsn.radardemo.common.DataCommon;
@@ -34,7 +31,7 @@ public class StepTwoProcess {
     private List<StationDto> srDto;
 
     @Transactional
-    public void stepTwo() {
+    public void stepTwo(String gubunStr) {
         String mode = DataCommon.getInfoConf("siteInfo", "mode");
         String currentTime = FormatDateUtil.formatDate("yyyy-MM-dd HH:mm", new Date());
         int gubun = Integer.parseInt(DataCommon.getInfoConf("siteInfo", "gubun"));
@@ -70,15 +67,16 @@ public class StepTwoProcess {
         List<ReceiveConditionCriteriaDto> rccDtoList = queryService.getReceiveConditionCriteriaList(gubun);
 
         // 전 사이트가 장애인지 여부 cnt
-        for (int a = 0; a < srCnt; a++) {
-            String site_cd = srDto.get(a).getSiteCd();
-            // 전 site 이력 조회
-            List<ReceiveDataDto> rdDtoSingle = queryService.getReceiveDataList(site_cd,
-                    dataKindStr, 1);
-            for (ReceiveDataDto rd : rdDtoSingle) {
-                if (rd.getRecv_condition().equals("MISS") &&
-                        rd.getCodedtl().equals("file_no")) {
-                    all_site_network_no++;
+        if (gubun != 3) {
+            for (int a = 0; a < srCnt; a++) {
+                String site_cd = srDto.get(a).getSiteCd();
+                // 전 site 이력 조회
+                List<ReceiveDataDto> rdDtoSingle = queryService.getReceiveDataList(site_cd, dataKindStr, 1);
+                // System.out.println("rdDtoSingle ::::" + rdDtoSingle);
+                for (ReceiveDataDto rd : rdDtoSingle) {
+                    if (rd.getRecv_condition().equals("MISS") && rd.getCodedtl().equals("file_no")) {
+                        all_site_network_no++;
+                    }
                 }
             }
         }
@@ -97,9 +95,9 @@ public class StepTwoProcess {
             log.info("[============ " + siteStr + " 정보 ==============]");
 
             if (all_site_network_no == srCnt) {
+                log.info("[####### 전 사이트 네트워크 장애 이력 update ########]");
                 // new_recv_condition = "TOTA";
                 // recv_con_dtl = "network_no";
-                log.info("[####### 전 사이트 네트워크 장애 이력 update ########]");
                 // 이력 update
                 queryService.updateReceiveData("TOTA", "network_no", site_cd, dataKindStr,
                         "NQC", "MISS", currentTime);
@@ -142,8 +140,7 @@ public class StepTwoProcess {
                     // new_recv_condition = "RETR";
                     // recv_con_dtl = "filesize_ok";
                     queryService.updateReceiveData("RETR", "filesize_ok", site_cd, dataKindStr,
-                            "NQC", "RECV",
-                            currentTime);
+                            "NQC", "RECV", currentTime);
                 }
 
             }
@@ -169,8 +166,7 @@ public class StepTwoProcess {
                     // 복구(file_ok)
                     if (rcc.getCodedtl().equals("file_ok")) {
                         // 최신 이력조회
-                        List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
-                                dataKindStr,
+                        List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
                                 rcc.getCriterion());
                         int cnt = 0;
                         for (ReceiveDataDto rd : rdDto) {
@@ -228,7 +224,7 @@ public class StepTwoProcess {
                         recv_con_dtl = "network_ok";
                     }
                     // 최종 네트워크 장애이고 이력이 장애일때 최종값 장애로
-                    if (rcc.getCriterion() == misscnt) {
+                    if (rcDto.getRecv_condition().equals("TOTA") && rcc.getCriterion() == misscnt) {
                         new_recv_condition = "WARN";
                         recv_con_dtl = "file_no";
                     }
@@ -237,8 +233,7 @@ public class StepTwoProcess {
                 // 네트워크 장애(network_no)
                 if (rcc.getCode().equals("TOTA")) {
                     // 이력조회
-                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd,
-                            dataKindStr,
+                    List<ReceiveDataDto> rdDto = queryService.getReceiveDataList(site_cd, dataKindStr,
                             rcc.getCriterion());
                     int cnt = 0;
                     for (ReceiveDataDto rd : rdDto) {
@@ -331,14 +326,14 @@ public class StepTwoProcess {
         SmsSendOnOffDto onoffDto = queryService.getSmsSendOnOffData();
         // System.out.println("onoffDto ::: " + onoffDto);
         if (onoffDto.getValue() == 1) {
-            stepThree(gubun, dataKindStr, srCnt, srDto);
+            stepThree(gubun, dataKindStr, srCnt, srDto, gubunStr);
         } else {
             log.info("[장애시 문자 발송 기능 off]");
         }
     }
 
     @Transactional
-    public void stepThree(int gubun, String dataKindStr, int srCnt, List<StationDto> srDto) {
+    public void stepThree(int gubun, String dataKindStr, int srCnt, List<StationDto> srDto, String gubunStr) {
 
         log.info("======================= 문자 전송 =================================");
 
@@ -366,6 +361,7 @@ public class StepTwoProcess {
                 recvCodeDtl = "network_no";
                 recvTota++;
             }
+            // 한 사이트 이상 복구
             if (rc.getRecv_condition().equals("TORE")) {
                 recvCode = "TORE";
                 recvCodeDtl = "network_ok";
@@ -379,7 +375,7 @@ public class StepTwoProcess {
 
         // JSONObject jsonSmsPettern = new JSONObject();
         String smsPetterns = "";
-        int rdCnt = 0; // 최종이력상태와 결과 값 같은것
+        // int rdCnt = 0; // 최종이력상태와 결과 값 같은것
 
         if (srDto.size() == recvTota || recvTore > 0) {
             List<SmsSendPatternDto> smsPatternDto = queryService.getSmsSendPattern(1, 1, recvCode, recvCodeDtl);
@@ -388,11 +384,17 @@ public class StepTwoProcess {
                 if (status.getStatus() > 0) {
                     for (SmsSendPatternDto spDto : smsPatternDto) {
                         if (status.getSite_status().equals(spDto.getMode())) {
-
                             for (ReceiveConditionDto rcList : rcActiveList) {
                                 if (rcList.getSite().equals(status.getSiteCd()) && rcList.getSms_send() == 0) {
-                                    smsPetterns = spDto.getPattern()
-                                            .replace("%SITE%", status.getSite_name()).replace("%TIME%", dateTime);
+                                    String siteName = "";
+                                    // 네트워크 장애, 복구 일때 대형,소형,공항 구분
+                                    if (recvCode.equals("TOTA") || recvCode.equals("TORE")) {
+                                        siteName = gubunStr + " ";
+                                    }
+
+                                    smsPetterns = siteName + spDto.getPattern()
+                                            .replace("%SITE%", status.getSite_name())
+                                            .replace("%TIME%", dateTime);
                                 }
                             }
                         }

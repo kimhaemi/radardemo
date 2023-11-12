@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'kr.or.kimsn'
-version = 'TDWR'
+version = 'RDR'
 
 java {
 	sourceCompatibility = '11'

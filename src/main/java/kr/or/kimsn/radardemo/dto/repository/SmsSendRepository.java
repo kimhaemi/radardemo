@@ -44,12 +44,14 @@ public interface SmsSendRepository extends JpaRepository<SmsSendDto, Long> {
 			@Param("msg_type") Integer msg_type);
 
 	@Query(nativeQuery = true, value = "INSERT INTO nuri.app_send_contents (\n" +
-			"  PACK_UNIQUEKEY\n" +
+			"  REQ_SEND_DATE \n" +
+			", PACK_UNIQUEKEY\n" +
 			", MSG_SUBJECT\n" +
 			", MSG_DATA\n" +
 			", MSG_TYPE\n" +
 			") VALUES (\n" +
-			" :appnextval  -- = PACK_UNIQUEKEY : 컨텐츠 일련번호\n" +
+			"  DATE_FORMAT(NOW(),'%Y%m%d%H%i%S')  -- = REQ_SEND_DATE : 메시지를 DB에 넣은 시간 (yyyymmddHHMMSS)\n" +
+			", :appnextval  -- = PACK_UNIQUEKEY : 컨텐츠 일련번호\n" +
 			", NULL        -- = 제목 실패시  NURI 모듈에서 사용할 값 NULL 가능\n" +
 			", :sms_txt    -- = 템플릿 자리수 포함 전체 1000자(실제는 980자)\n" +
 			", 'AT'        -- = 고정값\n" +
@@ -80,7 +82,8 @@ public interface SmsSendRepository extends JpaRepository<SmsSendDto, Long> {
 			", :call_to      -- CALL_FROM  = 수신번호 (숫자만 입력)\n" +
 			", '0'             -- = 접수요청 = 0 (반드시 0으로만 입력)\n" +
 			", 'KAKAO'         -- = 앱메시지 구분 : KAKAO(카카오), NAVER(네이버) 대문자로 입력\n" +
-			", 'radar_0001' -- :templateCode   -- = 사용할 템플릿코드\n" +
+			// ", 'radar_0001' -- :templateCode -- = 사용할 템플릿코드\n" +
+			", (select TEMPLATE_CODE from nuri.app_template_code atc where USE_BUTTON = 'Y')\n" +
 			// ", 'template_0001' -- = 사용할 템플릿코드\n" +
 			", 'L'             -- = GAON_MSG_TYPE ='L' 입력 고정 (실패시 자동 바이트 계산 후 SMS/LMS 재접수 처리)\n" +
 			")\n")

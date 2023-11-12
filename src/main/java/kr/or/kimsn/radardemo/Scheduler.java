@@ -38,7 +38,7 @@ public class Scheduler {
     @Scheduled(cron = "0 1,6,11,16,21,26,31,36,41,46,51,56 * * * *") // 6분 00초
     // 소형
     // @Scheduled(cron = "30 0-59 * * * *") // 매분 30초
-    // @Scheduled(fixedDelay = 180000) // 30초마다
+    // @Scheduled(fixedDelay = 30000) // 30초마다
     @Async
     public void cronJobSch() throws InterruptedException {
 
@@ -88,7 +88,7 @@ public class Scheduler {
         log.info("[" + PauseTime + "초 후 다음] : " + LocalDateTime.now().format(dtf));
         log.info("[=================== 2번째 프로세스 ===================] " + LocalDateTime.now().format(dtf));
         StepTwoProcess twoProc = new StepTwoProcess(queryService);
-        twoProc.stepTwo();
+        twoProc.stepTwo(gubunStr);
         twoProc = null;
         log.info("[=================== end ===================]");
 
